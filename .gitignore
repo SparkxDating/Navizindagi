@@ -1,0 +1,37 @@
+# Dependencies
+node_modules/
+
+# Build / preview
+.output/
+.vinxi/
+dist/
+.nitro/
+.tanstack/
+
+# Environment and secrets
+.env
+.env.local
+.env.*.local
+!.env.example
+
+# Logs and OS
+*.log
+.DS_Store
+Thumbs.db
+
+# Editor
+.vscode/
+.idea/
+*.swp
+
+# Sandbox / local-only
+.grok/
+artifacts/
+screenshots/
+attachments/
+AGENTS.md
+startup.sh
+*.db
+*.db-shm
+*.db-wal
+pglite-debug.log

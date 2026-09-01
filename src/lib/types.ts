@@ -49,6 +49,8 @@ export type Campaign = {
 export type CampaignUpdate = {
   id: number;
   campaignId: number;
+  campaignTitle?: string;
+  campaignSlug?: string;
   title: string;
   body: string;
   publishedAt: string | null;
@@ -99,6 +101,14 @@ export type Enquiry = {
   createdAt: string;
 };
 
+export type Faq = {
+  id: number;
+  question: string;
+  answer: string;
+  sortOrder: number;
+  isPublished: boolean;
+};
+
 export type ReportDoc = {
   id: number;
   title: string;
@@ -114,14 +124,6 @@ export type TeamMember = {
   bio: string;
   photoUrl: string;
   sortOrder: number;
-};
-
-export type Faq = {
-  id: number;
-  question: string;
-  answer: string;
-  sortOrder: number;
-  isPublished: boolean;
 };
 
 export type PaymentConfig = {

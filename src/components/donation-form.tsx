@@ -1,7 +1,7 @@
 import { useMemo, useState } from "react";
 import { useNavigate } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
-import { Lock, ShieldCheck } from "lucide-react";
+import { CreditCard, Lock, ShieldCheck, Smartphone } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -49,6 +49,8 @@ function loadRazorpay(): Promise<boolean> {
   });
 }
 
+const STEPS = ["Campaign", "Amount", "Your details", "Payment"] as const;
+
 export function DonationForm({
   campaigns,
   payment,
@@ -72,6 +74,7 @@ export function DonationForm({
         campaigns[0]?.slug ??
         "");
 
+  const [step, setStep] = useState(1);
   const [campaignSlug, setCampaignSlug] = useState(defaultSlug);
   const [amount, setAmount] = useState<number>(1000);
   const [custom, setCustom] = useState("");
@@ -229,154 +232,220 @@ export function DonationForm({
     );
   }
 
+  function goNext() {
+    if (step === 1 && !campaignSlug) {
+      toast.error("Please choose a campaign.");
+      return;
+    }
+    if (step === 2 && amountError) {
+      toast.error(amountError);
+      return;
+    }
+    setStep((current) => Math.min(3, current + 1));
+  }
+
   return (
     <form onSubmit={(event) => void onSubmit(event)} className="space-y-8">
-      <fieldset className="space-y-3">
-        <legend className="font-display text-xl text-navy">Choose a campaign</legend>
-        <div className="grid gap-3">
-          {campaigns.map((campaign) => (
-            <label
-              key={campaign.slug}
+      <ol className="grid grid-cols-4 gap-2 text-center text-[11px] font-semibold uppercase tracking-wide text-muted-foreground sm:text-xs">
+        {STEPS.map((label, index) => {
+          const number = index + 1;
+          const active = step === number || (step === 3 && number === 4);
+          const done = step > number || (step === 3 && number < 4);
+          return (
+            <li
+              key={label}
               className={cn(
-                "flex cursor-pointer items-start gap-3 rounded-2xl border bg-card p-4 shadow-card transition-colors",
-                campaignSlug === campaign.slug ? "border-teal bg-teal-soft/60" : "border-transparent",
+                "rounded-full px-2 py-2",
+                active || done ? "bg-teal-soft text-teal-dark" : "bg-muted",
               )}
             >
-              <input
-                type="radio"
-                name="campaign"
-                value={campaign.slug}
-                checked={campaignSlug === campaign.slug}
-                onChange={() => setCampaignSlug(campaign.slug)}
-                className="mt-1 accent-teal"
-              />
-              <span>
-                <span className="block font-semibold text-navy">{campaign.title}</span>
-                <span className="block text-sm text-muted-foreground">{campaign.shortDescription}</span>
-              </span>
-            </label>
-          ))}
-        </div>
-      </fieldset>
+              {number}. {label}
+            </li>
+          );
+        })}
+      </ol>
 
-      <fieldset className="space-y-3">
-        <legend className="font-display text-xl text-navy">Donation amount</legend>
-        <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
-          {PRESET_AMOUNTS.map((preset) => (
-            <button
-              key={preset}
-              type="button"
-              onClick={() => {
-                setUsingCustom(false);
-                setAmount(preset);
+      {step === 1 ? (
+        <fieldset className="space-y-3">
+          <legend className="font-display text-xl text-navy">Choose a campaign</legend>
+          <div className="grid gap-3">
+            {campaigns.map((campaign) => (
+              <label
+                key={campaign.slug}
+                className={cn(
+                  "flex min-h-14 cursor-pointer items-start gap-3 rounded-2xl border bg-card p-4 shadow-card transition-colors",
+                  campaignSlug === campaign.slug ? "border-teal bg-teal-soft/60" : "border-transparent",
+                )}
+              >
+                <input
+                  type="radio"
+                  name="campaign"
+                  value={campaign.slug}
+                  checked={campaignSlug === campaign.slug}
+                  onChange={() => setCampaignSlug(campaign.slug)}
+                  className="mt-1 accent-teal"
+                />
+                <span>
+                  <span className="block font-semibold text-navy">{campaign.title}</span>
+                  <span className="block text-sm text-muted-foreground">{campaign.shortDescription}</span>
+                </span>
+              </label>
+            ))}
+          </div>
+        </fieldset>
+      ) : null}
+
+      {step === 2 ? (
+        <fieldset className="space-y-3">
+          <legend className="font-display text-xl text-navy">Donation amount</legend>
+          <p className="text-sm text-muted-foreground">Supporting {selected?.title ?? "flood relief"}</p>
+          <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+            {PRESET_AMOUNTS.map((preset) => (
+              <button
+                key={preset}
+                type="button"
+                onClick={() => {
+                  setUsingCustom(false);
+                  setAmount(preset);
+                }}
+                className={cn(
+                  "min-h-12 rounded-full border px-3 text-sm font-semibold tabular-nums transition-colors",
+                  !usingCustom && amount === preset
+                    ? "border-teal bg-teal text-primary-foreground"
+                    : "border-border bg-card text-navy hover:bg-muted",
+                )}
+              >
+                {formatINR(preset)}
+              </button>
+            ))}
+          </div>
+          <Field label="Custom amount (INR)" htmlFor="custom-amount" error={usingCustom ? amountError : undefined}>
+            <Input
+              id="custom-amount"
+              inputMode="numeric"
+              value={custom}
+              onChange={(event) => {
+                setUsingCustom(true);
+                setCustom(event.target.value.replace(/[^\d]/g, ""));
               }}
-              className={cn(
-                "min-h-12 rounded-full border px-3 text-sm font-semibold tabular-nums transition-colors",
-                !usingCustom && amount === preset
-                  ? "border-teal bg-teal text-primary-foreground"
-                  : "border-border bg-card text-navy hover:bg-muted",
-              )}
-            >
-              {formatINR(preset)}
-            </button>
-          ))}
-        </div>
-        <Field label="Custom amount (INR)" htmlFor="custom-amount" error={usingCustom ? amountError : undefined}>
-          <Input
-            id="custom-amount"
-            inputMode="numeric"
-            value={custom}
-            onChange={(event) => {
-              setUsingCustom(true);
-              setCustom(event.target.value.replace(/[^\d]/g, ""));
-            }}
-            placeholder="Enter another amount"
-          />
-        </Field>
-      </fieldset>
+              placeholder="Enter another amount"
+            />
+          </Field>
+        </fieldset>
+      ) : null}
 
-      <div className="grid gap-4 sm:grid-cols-2">
-        <Field label="Donor name" htmlFor="donor-name" required>
-          <Input
-            id="donor-name"
-            required
-            minLength={2}
-            maxLength={120}
-            value={donorName}
-            onChange={(event) => setDonorName(event.target.value)}
-            autoComplete="name"
-          />
-        </Field>
-        <Field label="Email" htmlFor="donor-email" required>
-          <Input
-            id="donor-email"
-            type="email"
-            required
-            value={email}
-            onChange={(event) => setEmail(event.target.value)}
-            autoComplete="email"
-          />
-        </Field>
-        <Field label="Phone" htmlFor="donor-phone" required className="sm:col-span-2">
-          <Input
-            id="donor-phone"
-            type="tel"
-            required
-            minLength={8}
-            maxLength={20}
-            value={phone}
-            onChange={(event) => setPhone(event.target.value)}
-            autoComplete="tel"
-          />
-        </Field>
-        <Field label="Optional message" htmlFor="donor-message" className="sm:col-span-2">
-          <Textarea
-            id="donor-message"
-            maxLength={1000}
-            value={message}
-            onChange={(event) => setMessage(event.target.value)}
-            placeholder="A note for the Foundation (optional)"
-          />
-        </Field>
-      </div>
+      {step === 3 ? (
+        <>
+          <div className="rounded-2xl bg-cream p-4 text-sm">
+            <p className="font-semibold text-navy">{selected?.title}</p>
+            <p className="mt-1 tabular-nums text-muted-foreground">{formatINR(resolvedAmount)}</p>
+          </div>
+          <div className="grid gap-4 sm:grid-cols-2">
+            <Field label="Donor name" htmlFor="donor-name" required>
+              <Input
+                id="donor-name"
+                required
+                minLength={2}
+                maxLength={120}
+                value={donorName}
+                onChange={(event) => setDonorName(event.target.value)}
+                autoComplete="name"
+              />
+            </Field>
+            <Field label="Email" htmlFor="donor-email" required>
+              <Input
+                id="donor-email"
+                type="email"
+                required
+                value={email}
+                onChange={(event) => setEmail(event.target.value)}
+                autoComplete="email"
+              />
+            </Field>
+            <Field label="Phone" htmlFor="donor-phone" required className="sm:col-span-2">
+              <Input
+                id="donor-phone"
+                type="tel"
+                required
+                minLength={8}
+                maxLength={20}
+                value={phone}
+                onChange={(event) => setPhone(event.target.value)}
+                autoComplete="tel"
+              />
+            </Field>
+            <Field label="Optional message" htmlFor="donor-message" className="sm:col-span-2">
+              <Textarea
+                id="donor-message"
+                maxLength={1000}
+                value={message}
+                onChange={(event) => setMessage(event.target.value)}
+                placeholder="A note for the Foundation (optional)"
+              />
+            </Field>
+          </div>
 
-      <label className="flex items-start gap-3 text-sm text-navy">
-        <Checkbox checked={anonymous} onChange={(event) => setAnonymous(event.target.checked)} />
-        Give this donation anonymously on any public acknowledgement
-      </label>
+          <label className="flex items-start gap-3 text-sm text-navy">
+            <Checkbox checked={anonymous} onChange={(event) => setAnonymous(event.target.checked)} />
+            Give this donation anonymously on any public acknowledgement
+          </label>
 
-      <div className="hidden" aria-hidden>
-        <Label htmlFor="website">Website</Label>
-        <Input id="website" tabIndex={-1} autoComplete="off" value={website} onChange={(event) => setWebsite(event.target.value)} />
-      </div>
+          <div className="hidden" aria-hidden>
+            <Label htmlFor="website">Website</Label>
+            <Input id="website" tabIndex={-1} autoComplete="off" value={website} onChange={(event) => setWebsite(event.target.value)} />
+          </div>
 
-      <div className="space-y-3 rounded-2xl border border-border bg-cream p-5">
-        <p className="flex items-center gap-2 text-sm font-semibold text-navy">
-          <Lock className="size-4" />
-          Secure payment
-        </p>
-        {payment.mode === "sandbox" ? (
-          <p className="text-sm leading-relaxed text-muted-foreground">
-            Live gateway credentials are not configured. This form will open a labelled sandbox
-            checkout and will not collect real money. TODO: add <code>RAZORPAY_KEY_ID</code> and{" "}
-            <code>RAZORPAY_KEY_SECRET</code> on the server to enable Razorpay.
-          </p>
+          <div className="space-y-3 rounded-2xl border border-border bg-cream p-5">
+            <p className="flex items-center gap-2 text-sm font-semibold text-navy">
+              <Lock className="size-4" />
+              Secure payment
+            </p>
+            <ul className="space-y-2 text-sm text-muted-foreground">
+              <li className="flex items-start gap-2">
+                <ShieldCheck className="mt-0.5 size-4 shrink-0 text-teal" />
+                Payment is processed by the payment gateway, not stored on this website.
+              </li>
+              <li className="flex items-start gap-2">
+                <CreditCard className="mt-0.5 size-4 shrink-0 text-teal" />
+                Card, UPI and net-banking details are entered on the provider checkout.
+              </li>
+              <li className="flex items-start gap-2">
+                <Smartphone className="mt-0.5 size-4 shrink-0 text-teal" />
+                A donation is marked successful only after the server verifies gateway confirmation.
+              </li>
+            </ul>
+            {payment.mode === "sandbox" ? (
+              <p className="text-sm leading-relaxed text-muted-foreground">
+                Live gateway credentials are not configured. This form will open a labelled sandbox
+                checkout and will not collect real money. TODO: add <code>RAZORPAY_KEY_ID</code> and{" "}
+                <code>RAZORPAY_KEY_SECRET</code> on the server to enable Razorpay.
+              </p>
+            ) : (
+              <p className="text-sm leading-relaxed text-muted-foreground">
+                Card, UPI and net-banking details are entered on Razorpay's checkout. This website
+                does not store card numbers.
+              </p>
+            )}
+          </div>
+        </>
+      ) : null}
+
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+        {step > 1 ? (
+          <Button type="button" variant="outline" onClick={() => setStep((current) => current - 1)}>
+            Back
+          </Button>
+        ) : null}
+        {step < 3 ? (
+          <Button type="button" size="lg" onClick={goNext} className="sm:ml-auto">
+            Continue
+          </Button>
         ) : (
-          <p className="text-sm leading-relaxed text-muted-foreground">
-            Card, UPI and net-banking details are entered on Razorpay's checkout. This website
-            does not store card numbers. A donation is marked successful only after the server
-            verifies the gateway signature.
-          </p>
+          <Button type="submit" size="lg" disabled={busy || !campaignSlug} className="sm:ml-auto">
+            {busy ? "Please wait…" : `Pay securely · ${formatINR(resolvedAmount || 0)}`}
+          </Button>
         )}
-        <p className="flex items-center gap-2 text-xs text-muted-foreground">
-          <ShieldCheck className="size-3.5" />
-          Supporting {selected?.title ?? "flood relief"}
-        </p>
       </div>
-
-      <Button type="submit" size="lg" disabled={busy || !campaignSlug} className="w-full sm:w-auto">
-        {busy ? "Please wait…" : `Continue · ${formatINR(resolvedAmount || 0)}`}
-      </Button>
     </form>
   );
 }

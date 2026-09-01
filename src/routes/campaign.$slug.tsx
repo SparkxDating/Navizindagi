@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { ProgressBar } from "@/components/ui/progress";
 import { StatTile } from "@/components/stat-tile";
 import { getCampaignPage } from "@/lib/server/site";
+import { SITE_URL } from "@/lib/site";
 import { formatINR } from "@/lib/utils";
 
 export const Route = createFileRoute("/campaign/$slug")({
@@ -24,7 +25,12 @@ export const Route = createFileRoute("/campaign/$slug")({
         name: "description",
         content: loaderData?.campaign?.shortDescription ?? "Flood relief campaign",
       },
-      { property: "og:image", content: loaderData?.campaign?.heroImageUrl || "/og.jpg" },
+      {
+        property: "og:image",
+        content: loaderData?.campaign?.heroImageUrl?.startsWith("http")
+          ? loaderData.campaign.heroImageUrl
+          : `${SITE_URL}${loaderData?.campaign?.heroImageUrl || "/og.jpg"}`,
+      },
     ],
   }),
 });

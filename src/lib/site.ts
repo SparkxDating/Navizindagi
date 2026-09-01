@@ -1,7 +1,9 @@
 export const APP_NAME = "Navi Zindagi Foundation";
 export const APP_TAGLINE = "Empower. Elevate. Transform.";
+export const APP_TITLE = "Navi Zindagi Foundation | Flood Relief & Donations";
 export const APP_DESCRIPTION =
-  "Navi Zindagi Foundation raises funds and volunteer support for verified flood-relief efforts in Nepal and Assam. Donations help provide food, clean water, hygiene supplies, medical support, temporary shelter and essential items.";
+  "Navi Zindagi Foundation supports verified flood-relief efforts in Nepal and Assam through donations, volunteers and transparent relief updates.";
+export const SITE_URL = "https://navizindagi.org";
 
 export const PRESET_AMOUNTS = [500, 1000, 2500, 5000] as const;
 
@@ -65,6 +67,7 @@ export const RELIEF_CATEGORIES = [
 export const NAV_LINKS = [
   { to: "/", label: "Home" },
   { to: "/about", label: "About" },
+  { to: "/campaigns", label: "Campaigns" },
   { to: "/transparency", label: "Transparency" },
   { to: "/volunteer", label: "Volunteer" },
   { to: "/contact", label: "Contact" },

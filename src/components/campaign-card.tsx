@@ -75,7 +75,7 @@ export function CampaignCard({
             </Button>
             <Button asChild variant="outline" className="flex-1">
               <Link to="/campaign/$slug" params={{ slug: campaign.slug }}>
-                Campaign details
+                View campaign
               </Link>
             </Button>
           </div>

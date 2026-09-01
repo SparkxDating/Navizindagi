@@ -47,7 +47,7 @@ export function Navbar() {
         </nav>
 
         <div className="flex items-center gap-2">
-          <Button asChild size="sm" className="hidden sm:inline-flex">
+          <Button asChild className="hidden sm:inline-flex">
             <Link to="/donate" search={{ campaign: undefined }}>
               Donate Now
             </Link>

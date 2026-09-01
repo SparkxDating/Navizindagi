@@ -6,7 +6,7 @@ import { Section } from "@/components/section";
 import { Button } from "@/components/ui/button";
 import { ProgressBar } from "@/components/ui/progress";
 import { StatTile } from "@/components/stat-tile";
-import { RELIEF_CATEGORIES } from "@/lib/site";
+import { APP_DESCRIPTION, APP_TITLE, RELIEF_CATEGORIES, SITE_URL } from "@/lib/site";
 import { getPublicSite } from "@/lib/server/site";
 import { formatINR } from "@/lib/utils";
 
@@ -14,14 +14,20 @@ export const Route = createFileRoute("/")({
   loader: () => getPublicSite(),
   component: HomePage,
   head: () => ({
-    meta: [{ title: "Navi Zindagi Foundation · Stand With Flood-Affected Families" }],
+    meta: [
+      { title: APP_TITLE },
+      { name: "description", content: APP_DESCRIPTION },
+    ],
+    links: [{ rel: "canonical", href: SITE_URL }],
   }),
 });
 
 function HomePage() {
   const { settings, campaigns } = Route.useLoaderData();
-  const featured = campaigns.filter((campaign) => campaign.isFeatured).slice(0, 2);
-  const shown = featured.length >= 2 ? featured : campaigns.slice(0, 2);
+  const nepal = campaigns.find((campaign) => campaign.slug === "nepal-flood-relief");
+  const assam = campaigns.find((campaign) => campaign.slug === "assam-flood-relief");
+  const featured = [nepal, assam].filter((campaign): campaign is NonNullable<typeof campaign> => Boolean(campaign));
+  const shown = featured.length >= 2 ? featured : campaigns.filter((campaign) => campaign.slug !== "general-relief").slice(0, 2);
 
   return (
     <>
@@ -32,8 +38,8 @@ function HomePage() {
           className="absolute inset-0 size-full object-cover opacity-35"
         />
         <div className="absolute inset-0 bg-gradient-to-r from-navy-deep via-navy/85 to-navy/55" />
-        <div className="relative mx-auto grid max-w-6xl gap-10 px-4 py-16 sm:px-6 sm:py-24 lg:grid-cols-[1.1fr_0.9fr] lg:items-center">
-          <div className="reveal max-w-xl">
+        <div className="relative mx-auto max-w-6xl px-4 py-16 sm:px-6 sm:py-24 lg:py-28">
+          <div className="reveal max-w-2xl">
             <p className="text-xs font-semibold uppercase tracking-[0.2em] text-gold">
               {settings.tagline}
             </p>
@@ -41,10 +47,8 @@ function HomePage() {
               Stand With Flood-Affected Families
             </h1>
             <p className="mt-5 text-base leading-relaxed text-cream/80 sm:text-lg">
-              Donations to Navi Zindagi Foundation support verified flood-relief efforts in Nepal
-              and Assam — food, clean water, hygiene supplies, medical support, temporary shelter
-              and essential household items. We publish confirmed information and label the rest as
-              still to be updated.
+              Your support can help provide essential relief such as food, clean water, hygiene
+              supplies, medical assistance and temporary shelter.
             </p>
             <div className="mt-8 flex flex-col gap-3 sm:flex-row">
               <Button asChild size="lg">
@@ -56,23 +60,6 @@ function HomePage() {
                 <Link to="/volunteer">Become a Volunteer</Link>
               </Button>
             </div>
-          </div>
-          <div className="grid gap-4">
-            {shown.map((campaign) => (
-              <div key={campaign.id} className="rounded-2xl bg-card/95 p-5 shadow-card backdrop-blur">
-                <p className="text-xs font-semibold uppercase tracking-[0.14em] text-teal-dark">
-                  {campaign.locationLabel}
-                </p>
-                <h2 className="mt-1 font-display text-2xl text-navy">{campaign.title}</h2>
-                <p className="mt-2 text-sm text-muted-foreground">{campaign.shortDescription}</p>
-                <ProgressBar className="mt-4" raised={campaign.amountRaised} target={campaign.targetAmount} />
-                <Button asChild className="mt-4 w-full">
-                  <Link to="/campaign/$slug" params={{ slug: campaign.slug }}>
-                    View campaign
-                  </Link>
-                </Button>
-              </div>
-            ))}
           </div>
         </div>
       </section>
@@ -87,6 +74,11 @@ function HomePage() {
             <CampaignCard key={campaign.id} campaign={campaign} />
           ))}
         </div>
+        <div className="mt-8 text-center">
+          <Button asChild variant="outline">
+            <Link to="/campaigns">View all campaigns</Link>
+          </Button>
+        </div>
       </Section>
 
       <Section
@@ -96,19 +88,21 @@ function HomePage() {
         lead="Totals below combine verified completed payments with any amounts the Foundation has published in the admin area. Sandbox/test payments are excluded."
       >
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {campaigns
-            .filter((campaign) => campaign.slug !== "general-relief" || campaign.amountRaised > 0)
-            .map((campaign) => (
-              <div key={campaign.id} className="rounded-2xl bg-card p-5 shadow-card">
-                <h3 className="font-display text-xl text-navy">{campaign.title}</h3>
-                <p className="mt-3 font-display text-2xl tabular-nums text-navy">
-                  {campaign.amountRaised > 0 || campaign.targetAmount > 0
-                    ? formatINR(campaign.amountRaised)
-                    : "Updates coming soon"}
-                </p>
+          {campaigns.map((campaign) => (
+            <div key={campaign.id} className="rounded-2xl bg-card p-5 shadow-card">
+              <h3 className="font-display text-xl text-navy">{campaign.title}</h3>
+              <p className="mt-3 font-display text-2xl tabular-nums text-navy">
+                {campaign.amountRaised > 0 || campaign.targetAmount > 0
+                  ? formatINR(campaign.amountRaised)
+                  : "Updates coming soon"}
+              </p>
+              {campaign.amountRaised > 0 || campaign.targetAmount > 0 ? (
                 <ProgressBar className="mt-3" raised={campaign.amountRaised} target={campaign.targetAmount} />
-              </div>
-            ))}
+              ) : (
+                <p className="mt-3 text-xs text-muted-foreground">Fundraising figures: Updates coming soon</p>
+              )}
+            </div>
+          ))}
         </div>
       </Section>
 
@@ -172,7 +166,7 @@ function HomePage() {
 
       <Section
         eyebrow="The Foundation"
-        title="A registered Indian NGO"
+        title="Transparent NGO information"
         lead="Operational claims stay limited to information the Foundation has confirmed and published."
       >
         <div className="grid gap-6 lg:grid-cols-2">

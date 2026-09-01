@@ -7,6 +7,7 @@ import {
   volunteerSchema,
 } from "@/lib/schemas";
 import type { Campaign, SiteSettings } from "@/lib/types";
+import { sanitizeMultiline, sanitizePlainText } from "@/lib/utils";
 import {
   CAMPAIGN_SELECT,
   mapCampaign,
@@ -47,12 +48,20 @@ export const getSettings = createServerFn({ method: "GET" }).handler(async () =>
 
 export const getPublicSite = createServerFn({ method: "GET" }).handler(async () => {
   const sql = await getSql();
-  const [settings, campaigns, faqs, reports, team] = await Promise.all([
+  const [settings, campaigns, faqs, reports, team, updates] = await Promise.all([
     loadSettings(),
     loadCampaigns(true),
     sql`select * from faqs where is_published = true order by sort_order, id`,
     sql`select * from reports where published_at is not null order by published_at desc, id desc`,
     sql`select * from team_members order by sort_order, id`,
+    sql.query<Record<string, unknown>>(
+      `select u.*, c.title as campaign_title, c.slug as campaign_slug
+       from campaign_updates u
+       join campaigns c on c.id = u.campaign_id
+       where u.published_at is not null
+       order by u.published_at desc, u.id desc
+       limit 8`,
+    ),
   ]);
   return {
     settings,
@@ -60,6 +69,7 @@ export const getPublicSite = createServerFn({ method: "GET" }).handler(async () 
     faqs: faqs.map(mapFaq),
     reports: reports.map(mapReport),
     team: team.map(mapTeam),
+    updates: updates.map(mapUpdate),
   };
 });
 
@@ -118,15 +128,15 @@ export const submitVolunteer = createServerFn({ method: "POST" })
         (full_name, email, phone, city, state_country, areas_of_interest, availability, skills, message, consent)
        values ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10)`,
       [
-        data.fullName,
-        data.email,
-        data.phone,
-        data.city,
-        data.stateCountry,
-        JSON.stringify(data.areasOfInterest),
-        data.availability,
-        data.skills ?? "",
-        data.message ?? "",
+        sanitizePlainText(data.fullName, 120),
+        sanitizePlainText(data.email, 200),
+        sanitizePlainText(data.phone, 20),
+        sanitizePlainText(data.city, 80),
+        sanitizePlainText(data.stateCountry, 80),
+        JSON.stringify(data.areasOfInterest.map((item) => sanitizePlainText(item, 80))),
+        sanitizePlainText(data.availability, 80),
+        sanitizePlainText(data.skills ?? "", 500),
+        sanitizeMultiline(data.message ?? "", 1000),
         true,
       ],
     );
@@ -145,7 +155,7 @@ export const submitEnquiry = createServerFn({ method: "POST" })
     await sql.query(
       `insert into contact_enquiries (name, email, phone, subject, message)
        values ($1,$2,$3,$4,$5)`,
-      [data.name, data.email, data.phone ?? "", data.subject, data.message],
+      [sanitizePlainText(data.name, 120), sanitizePlainText(data.email, 200), sanitizePlainText(data.phone ?? "", 20), sanitizePlainText(data.subject, 160), sanitizeMultiline(data.message, 2000)],
     );
     return { ok: true as const };
   });

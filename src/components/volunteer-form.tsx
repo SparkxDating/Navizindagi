@@ -67,8 +67,9 @@ export function VolunteerForm() {
       <div className="rounded-2xl bg-teal-soft p-8 text-center shadow-card">
         <h2 className="font-display text-2xl text-navy">Thank you for offering to help</h2>
         <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
-          Your volunteer registration has been received. A team member will follow up using the
-          contact details you provided. Submitting this form is not a guarantee of placement.
+          Your volunteer registration has been received. We will review your information and contact
+          you if there is a suitable opportunity. Submitting this form is not a guarantee of
+          placement.
         </p>
         <Button type="button" variant="outline" className="mt-6" onClick={() => setDone(false)}>
           Submit another response

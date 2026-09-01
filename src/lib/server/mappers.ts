@@ -91,6 +91,8 @@ export function mapUpdate(row: Record<string, unknown>): CampaignUpdate {
   return {
     id: num(row.id),
     campaignId: num(row.campaign_id ?? row.campaignId),
+    campaignTitle: text(row.campaign_title ?? row.campaignTitle) || undefined,
+    campaignSlug: text(row.campaign_slug ?? row.campaignSlug) || undefined,
     title: text(row.title),
     body: text(row.body),
     publishedAt: tsOrNull(row.published_at ?? row.publishedAt),

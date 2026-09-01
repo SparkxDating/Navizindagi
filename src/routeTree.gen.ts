@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AboutRouteImport } from './routes/about'
 import { Route as AdminRouteImport } from './routes/admin'
+import { Route as CampaignsRouteImport } from './routes/campaigns'
 import { Route as ContactRouteImport } from './routes/contact'
 import { Route as DisclaimerRouteImport } from './routes/disclaimer'
 import { Route as DonateRouteImport } from './routes/donate'
@@ -48,6 +49,11 @@ const AboutRoute = AboutRouteImport.update({
 const AdminRoute = AdminRouteImport.update({
   id: '/admin',
   path: '/admin',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CampaignsRoute = CampaignsRouteImport.update({
+  id: '/campaigns',
+  path: '/campaigns',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ContactRoute = ContactRouteImport.update({
@@ -165,6 +171,7 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
   '/admin': typeof AdminRouteWithChildren
+  '/campaigns': typeof CampaignsRoute
   '/contact': typeof ContactRoute
   '/disclaimer': typeof DisclaimerRoute
   '/donate': typeof DonateRoute
@@ -191,6 +198,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
+  '/campaigns': typeof CampaignsRoute
   '/contact': typeof ContactRoute
   '/disclaimer': typeof DisclaimerRoute
   '/donate': typeof DonateRoute
@@ -219,6 +227,7 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
   '/admin': typeof AdminRouteWithChildren
+  '/campaigns': typeof CampaignsRoute
   '/contact': typeof ContactRoute
   '/disclaimer': typeof DisclaimerRoute
   '/donate': typeof DonateRoute
@@ -248,6 +257,7 @@ export interface FileRouteTypes {
     | '/'
     | '/about'
     | '/admin'
+    | '/campaigns'
     | '/contact'
     | '/disclaimer'
     | '/donate'
@@ -274,6 +284,7 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/about'
+    | '/campaigns'
     | '/contact'
     | '/disclaimer'
     | '/donate'
@@ -301,6 +312,7 @@ export interface FileRouteTypes {
     | '/'
     | '/about'
     | '/admin'
+    | '/campaigns'
     | '/contact'
     | '/disclaimer'
     | '/donate'
@@ -329,6 +341,7 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AboutRoute: typeof AboutRoute
   AdminRoute: typeof AdminRouteWithChildren
+  CampaignsRoute: typeof CampaignsRoute
   ContactRoute: typeof ContactRoute
   DisclaimerRoute: typeof DisclaimerRoute
   DonateRoute: typeof DonateRoute
@@ -364,6 +377,13 @@ declare module '@tanstack/react-router' {
       path: '/admin'
       fullPath: '/admin'
       preLoaderRoute: typeof AdminRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/campaigns': {
+      id: '/campaigns'
+      path: '/campaigns'
+      fullPath: '/campaigns'
+      preLoaderRoute: typeof CampaignsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/contact': {
@@ -555,6 +575,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AboutRoute: AboutRoute,
   AdminRoute: AdminRouteWithChildren,
+  CampaignsRoute: CampaignsRoute,
   ContactRoute: ContactRoute,
   DisclaimerRoute: DisclaimerRoute,
   DonateRoute: DonateRoute,

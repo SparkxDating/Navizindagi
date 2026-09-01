@@ -30,6 +30,31 @@ export function whatsappHref(phone: string, message?: string) {
   return `https://wa.me/${digits}${text}`;
 }
 
+export function telHref(phone: string) {
+  const cleaned = phone.replace(/[^\d+]/g, "");
+  return cleaned ? `tel:${cleaned}` : undefined;
+}
+
+export function sanitizePlainText(value: string, max = 4000) {
+  return value
+    // Strip C0 control characters that should never be stored from form input.
+    // eslint-disable-next-line no-control-regex
+    .replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F]/g, "")
+    .replace(/[<>]/g, "")
+    .replace(/\s+/g, " ")
+    .trim()
+    .slice(0, max);
+}
+
+export function sanitizeMultiline(value: string, max = 8000) {
+  return value
+    // eslint-disable-next-line no-control-regex
+    .replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F]/g, "")
+    .replace(/[<>]/g, "")
+    .trim()
+    .slice(0, max);
+}
+
 export function parseStringList(value: string | null | undefined): string[] {
   if (!value) return [];
   const trimmed = value.trim();

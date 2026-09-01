@@ -40,6 +40,13 @@ async function assertAdmin(userId: string, bearerToken?: string) {
   const admins = await sql<{ user_id: string }>`select user_id from admin_users`;
   if (admins.length === 0) {
     const session = await getSessionUser(bearerToken);
+    const bootstrapEmail = process.env.ADMIN_BOOTSTRAP_EMAIL?.trim().toLowerCase();
+    if (bootstrapEmail) {
+      const sessionEmail = session?.email?.trim().toLowerCase() ?? "";
+      if (!sessionEmail || sessionEmail !== bootstrapEmail) {
+        throw new ForbiddenError();
+      }
+    }
     await sql.query(
       `insert into admin_users (user_id, email, role) values ($1, $2, 'admin')
        on conflict (user_id) do nothing`,

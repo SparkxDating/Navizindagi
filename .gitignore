@@ -12,6 +12,9 @@ dist/
 .env
 .env.local
 .env.*.local
+.vercel
+
+# Allow the committed template
 !.env.example
 
 # Logs and OS
@@ -26,6 +29,7 @@ Thumbs.db
 
 # Sandbox / local-only
 .grok/
+.vercel/
 artifacts/
 screenshots/
 attachments/

@@ -13,7 +13,7 @@ import { NotFoundPage } from "@/components/not-found";
 import { Skeleton } from "@/components/ui/skeleton";
 import { AuthProvider } from "@/lib/auth/provider";
 import { AppErrorComponent } from "@/lib/error-component";
-import { APP_DESCRIPTION, APP_NAME, APP_TAGLINE } from "@/lib/site";
+import { APP_DESCRIPTION, APP_NAME, APP_TAGLINE, APP_TITLE, SITE_URL } from "@/lib/site";
 import { getSettings } from "@/lib/server/site";
 import appCss from "@/styles.css?url";
 
@@ -33,17 +33,18 @@ export const Route = createRootRoute({
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: `${APP_NAME} · Flood Relief` },
+      { title: APP_TITLE },
       { name: "description", content: APP_DESCRIPTION },
       { name: "theme-color", content: "#0B1F3A" },
-      { property: "og:title", content: `${APP_NAME} · Stand With Flood-Affected Families` },
+      { property: "og:title", content: APP_TITLE },
       { property: "og:description", content: APP_DESCRIPTION },
-      { property: "og:image", content: "/og.jpg" },
+      { property: "og:image", content: `${SITE_URL}/og.jpg` },
       { property: "og:type", content: "website" },
+      { property: "og:url", content: SITE_URL },
       { name: "twitter:card", content: "summary_large_image" },
-      { name: "twitter:title", content: `${APP_NAME}` },
+      { name: "twitter:title", content: APP_TITLE },
       { name: "twitter:description", content: APP_DESCRIPTION },
-      { name: "twitter:image", content: "/og.jpg" },
+      { name: "twitter:image", content: `${SITE_URL}/og.jpg` },
     ],
     links: [
       { rel: "icon", href: "/favicon.svg", type: "image/svg+xml" },

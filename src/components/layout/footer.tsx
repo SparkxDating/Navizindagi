@@ -38,6 +38,11 @@ export function Footer({ settings }: { settings: SiteSettings | null }) {
               </Link>
             </li>
             <li>
+              <Link to="/campaigns" className="text-cream/80 hover:text-cream">
+                Campaigns
+              </Link>
+            </li>
+            <li>
               <Link to="/transparency" className="text-cream/80 hover:text-cream">
                 Transparency
               </Link>

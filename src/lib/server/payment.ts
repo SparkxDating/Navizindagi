@@ -7,8 +7,15 @@ import {
 } from "@/lib/schemas";
 import type { PaymentConfig } from "@/lib/types";
 import { sanitizeMultiline, sanitizePlainText } from "@/lib/utils";
-import { mapDonation } from "./mappers";
+import { mapDonation, num, text } from "./mappers";
 import { getRequestIp, rateLimit } from "./rate-limit";
+import {
+  decidePaymentCompletion,
+  expectedPaise,
+  verifyCheckoutSignature,
+  type GatewayPayment,
+  type LocalDonation,
+} from "./razorpay-complete";
 
 /**
  * Payment gateway credentials — server only.
@@ -55,8 +62,83 @@ async function razorpayGet<T>(path: string): Promise<T> {
   return (await response.json()) as T;
 }
 
-function expectedPaise(amountInRupees: number) {
-  return amountInRupees * 100;
+export { expectedPaise };
+
+function toLocalDonation(row: Record<string, unknown>): LocalDonation {
+  return {
+    id: num(row.id),
+    status: text(row.status),
+    amount: num(row.amount),
+    currency: text(row.currency) || "INR",
+    paymentId: text(row.payment_id ?? row.paymentId),
+    paymentOrderId: text(row.payment_order_id ?? row.paymentOrderId),
+    campaignId: num(row.campaign_id ?? row.campaignId),
+    organizationId: num(row.organization_id ?? row.organizationId),
+  };
+}
+
+async function donationByOrderId(orderId: string) {
+  const sql = await getSql();
+  const rows = await sql.query<Record<string, unknown>>(
+    `select d.*, c.title as campaign_title, c.slug as campaign_slug, c.organization_id
+     from donations d
+     join campaigns c on c.id = d.campaign_id
+     where d.payment_order_id = $1`,
+    [orderId],
+  );
+  return rows[0] ?? null;
+}
+
+async function paymentOwnerId(paymentId: string) {
+  if (!paymentId) return null;
+  const sql = await getSql();
+  const rows = await sql.query<{ id: number }>(
+    `select id from donations where payment_id = $1 and payment_id <> '' limit 1`,
+    [paymentId],
+  );
+  return rows[0]?.id ?? null;
+}
+
+export async function completeCapturedPayment(payment: GatewayPayment) {
+  const sql = await getSql();
+  const row = await donationByOrderId(payment.orderId);
+  const donation = row ? toLocalDonation(row) : null;
+  const owner = await paymentOwnerId(payment.id);
+  const decision = decidePaymentCompletion({
+    donation,
+    payment,
+    paymentAlreadyOnDonationId: owner,
+  });
+  if (decision.action === "reject") {
+    throw new Error("Payment could not be applied to this donation.");
+  }
+  if (decision.action === "idempotent" || !donation) {
+    return { ok: true as const, referenceId: text(row?.reference_id), idempotent: true as const };
+  }
+  const updated = await sql.query<{ id: number; reference_id: string }>(
+    `update donations
+     set status = 'completed',
+         payment_id = $1,
+         payment_order_id = $2,
+         updated_at = now()
+     where id = $3
+       and campaign_id = $4
+       and payment_order_id = $2
+       and amount = $5
+       and status in ('pending','failed')
+       and (payment_id = '' or payment_id = $1)
+     returning id, reference_id`,
+    [payment.id, payment.orderId, donation.id, donation.campaignId, donation.amount],
+  );
+  if (!updated[0]) {
+    const again = await donationByOrderId(payment.orderId);
+    const current = again ? toLocalDonation(again) : null;
+    if (current?.status === "completed" && current.paymentId === payment.id) {
+      return { ok: true as const, referenceId: text(again?.reference_id), idempotent: true as const };
+    }
+    throw new Error("Donation could not be marked successful after verification.");
+  }
+  return { ok: true as const, referenceId: updated[0].reference_id, idempotent: false as const };
 }
 
 export const getPaymentConfig = createServerFn({ method: "GET" }).handler(async () => {
@@ -175,18 +257,20 @@ export const verifyRazorpayPayment = createServerFn({ method: "POST" })
     if (!keyId || !keySecret) {
       throw new Error("Live payment verification is not configured.");
     }
-    const { createHmac, timingSafeEqual } = await import("node:crypto");
-    const payload = `${data.razorpayOrderId}|${data.razorpayPaymentId}`;
-    const expected = createHmac("sha256", keySecret).update(payload).digest("hex");
-    const left = Buffer.from(expected);
-    const right = Buffer.from(data.razorpaySignature);
-    if (left.length !== right.length || !timingSafeEqual(left, right)) {
+    if (
+      !verifyCheckoutSignature(
+        data.razorpayOrderId,
+        data.razorpayPaymentId,
+        data.razorpaySignature,
+        keySecret,
+      )
+    ) {
       throw new Error("Payment signature could not be verified.");
     }
 
     const sql = await getSql();
     const rows = await sql.query<Record<string, unknown>>(
-      `select d.*, c.title as campaign_title, c.slug as campaign_slug
+      `select d.*, c.title as campaign_title, c.slug as campaign_slug, c.organization_id
        from donations d join campaigns c on c.id = d.campaign_id
        where d.reference_id = $1`,
       [data.referenceId],
@@ -195,12 +279,6 @@ export const verifyRazorpayPayment = createServerFn({ method: "POST" })
     if (!donation) throw new Error("Donation record not found.");
     if (donation.status === "completed" && donation.paymentId === data.razorpayPaymentId) {
       return { ok: true as const, referenceId: data.referenceId };
-    }
-    if (donation.status === "completed") {
-      throw new Error("This donation was already verified.");
-    }
-    if (!donation.paymentOrderId) {
-      throw new Error("This donation has no gateway order to verify.");
     }
     if (donation.paymentOrderId !== data.razorpayOrderId) {
       throw new Error("Order id does not match this donation.");
@@ -218,24 +296,10 @@ export const verifyRazorpayPayment = createServerFn({ method: "POST" })
     if (!payment.id || payment.id !== data.razorpayPaymentId) {
       throw new Error("Gateway payment id could not be confirmed.");
     }
-    if (payment.order_id !== donation.paymentOrderId) {
-      throw new Error("Payment does not belong to the expected order.");
-    }
-    if (payment.amount !== expectedPaise(donation.amount)) {
-      throw new Error("Verified payment amount does not match this donation.");
-    }
-    if ((payment.currency ?? "INR").toUpperCase() !== "INR") {
-      throw new Error("Verified payment currency does not match this donation.");
-    }
-    const paymentStatus = (payment.status ?? "").toLowerCase();
-    if (paymentStatus !== "captured" && payment.captured !== true) {
-      throw new Error("Payment is not in a captured state.");
-    }
 
     const order = await razorpayGet<{
       id?: string;
       amount?: number;
-      amount_paid?: number;
       currency?: string;
       status?: string;
     }>(`/orders/${encodeURIComponent(donation.paymentOrderId)}`);
@@ -243,31 +307,18 @@ export const verifyRazorpayPayment = createServerFn({ method: "POST" })
     if (!order.id || order.id !== donation.paymentOrderId) {
       throw new Error("Gateway order could not be confirmed.");
     }
-    if (order.amount !== expectedPaise(donation.amount)) {
-      throw new Error("Verified order amount does not match this donation.");
-    }
     if ((order.status ?? "").toLowerCase() !== "paid") {
       throw new Error("Gateway order is not marked paid.");
     }
 
-    const updated = await sql.query<{ id: number }>(
-      `update donations
-       set status = 'completed',
-           payment_id = $1,
-           payment_order_id = $2,
-           updated_at = now()
-       where reference_id = $3
-         and status in ('pending','failed')
-         and payment_order_id = $2
-         and amount = $4
-       returning id`,
-      [data.razorpayPaymentId, data.razorpayOrderId, data.referenceId, donation.amount],
-    );
-    if (!updated[0]) {
-      throw new Error("Donation could not be marked successful after verification.");
-    }
-
-    return { ok: true as const, referenceId: data.referenceId };
+    const result = await completeCapturedPayment({
+      id: payment.id,
+      orderId: String(payment.order_id ?? ""),
+      amountPaise: Number(payment.amount),
+      currency: String(payment.currency ?? "INR"),
+      captured: payment.captured === true || (payment.status ?? "").toLowerCase() === "captured",
+    });
+    return { ok: true as const, referenceId: result.referenceId || data.referenceId };
   });
 
 export const completeSandboxDonation = createServerFn({ method: "POST" })

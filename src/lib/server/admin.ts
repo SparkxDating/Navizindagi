@@ -150,14 +150,16 @@ export const saveCampaign = createServerFn({ method: "POST" })
     const countryCode = data.countryCode ?? "";
     const hero = data.heroImageUrl ?? "";
     const utilisation = data.utilisationNotes ?? "";
+    const campaignStatus = data.isActive ? "active" : "paused";
     if (data.id) {
       await sql.query(
         `update campaigns set
            slug=$1, title=$2, location_label=$3, country_code=$4, hero_image_url=$5,
            short_description=$6, situation_text=$7, mission_text=$8, relief_priorities=$9,
            utilisation_notes=$10, target_amount=$11, manual_amount_raised=$12,
-           manual_donor_count=$13, is_featured=$14, is_active=$15, sort_order=$16, updated_at=now()
-         where id=$17`,
+           manual_donor_count=$13, is_featured=$14, is_active=$15, sort_order=$16,
+           status=$17, updated_at=now()
+         where id=$18`,
         [
           data.slug,
           data.title,
@@ -175,6 +177,7 @@ export const saveCampaign = createServerFn({ method: "POST" })
           data.isFeatured,
           data.isActive,
           data.sortOrder,
+          campaignStatus,
           data.id,
         ],
       );
@@ -184,8 +187,14 @@ export const saveCampaign = createServerFn({ method: "POST" })
       `insert into campaigns (
          slug, title, location_label, country_code, hero_image_url, short_description,
          situation_text, mission_text, relief_priorities, utilisation_notes, target_amount,
-         manual_amount_raised, manual_donor_count, is_featured, is_active, sort_order
-       ) values ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16)
+         manual_amount_raised, manual_donor_count, is_featured, is_active, sort_order,
+         organization_id, created_by, status
+       ) values (
+         $1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,
+         (select id from organizations where slug = 'navi-zindagi-foundation' limit 1),
+         (select id from "user" where id = $17),
+         $18
+       )
        returning id`,
       [
         data.slug,
@@ -204,6 +213,8 @@ export const saveCampaign = createServerFn({ method: "POST" })
         data.isFeatured,
         data.isActive,
         data.sortOrder,
+        context.userId,
+        campaignStatus,
       ],
     );
     return { ok: true as const, id: inserted[0]?.id ?? 0 };

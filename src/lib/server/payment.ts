@@ -83,11 +83,11 @@ export const createDonation = createServerFn({ method: "POST" })
     }
 
     const sql = await getSql();
-    const campaigns = await sql`select id, title, slug, is_active from campaigns where slug = ${data.campaignSlug}`;
+    const campaigns = await sql`select id, title, slug, is_active, status from campaigns where slug = ${data.campaignSlug}`;
     const campaign = campaigns[0] as
-      | { id: number; title: string; slug: string; is_active: boolean }
+      | { id: number; title: string; slug: string; is_active: boolean; status: string }
       | undefined;
-    if (!campaign || !campaign.is_active) {
+    if (!campaign || !campaign.is_active || campaign.status !== "active") {
       throw new Error("That campaign is not available.");
     }
 

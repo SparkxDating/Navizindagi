@@ -34,7 +34,7 @@ async function loadCampaigns(activeOnly = true): Promise<Campaign[]> {
   const sql = await getSql();
   const rows = activeOnly
     ? await sql.query<Record<string, unknown>>(
-        `select ${CAMPAIGN_SELECT} from campaigns c where c.is_active = true order by c.sort_order, c.id`,
+        `select ${CAMPAIGN_SELECT} from campaigns c where c.is_active = true and c.status = 'active' order by c.sort_order, c.id`,
       )
     : await sql.query<Record<string, unknown>>(
         `select ${CAMPAIGN_SELECT} from campaigns c order by c.sort_order, c.id`,
@@ -80,7 +80,7 @@ export const getCampaignPage = createServerFn({ method: "GET" })
     const [settings, rows] = await Promise.all([
       loadSettings(),
       sql.query<Record<string, unknown>>(
-        `select ${CAMPAIGN_SELECT} from campaigns c where c.slug = $1 and c.is_active = true`,
+        `select ${CAMPAIGN_SELECT} from campaigns c where c.slug = $1 and c.is_active = true and c.status = 'active'`,
         [data.slug],
       ),
     ]);

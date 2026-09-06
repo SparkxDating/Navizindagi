@@ -22,6 +22,14 @@ export type SiteSettings = {
   updatedAt: string;
 };
 
+export type CampaignStatus =
+  | "draft"
+  | "pending_review"
+  | "active"
+  | "paused"
+  | "completed"
+  | "rejected";
+
 export type Campaign = {
   id: number;
   slug: string;
@@ -42,6 +50,16 @@ export type Campaign = {
   isFeatured: boolean;
   isActive: boolean;
   sortOrder: number;
+  organizationId: number;
+  createdBy: string;
+  status: CampaignStatus;
+  category: string;
+  startAt: string | null;
+  endAt: string | null;
+  beneficiaryName: string;
+  videoUrl: string;
+  allowFundraisers: boolean;
+  allowRecurring: boolean;
   createdAt: string;
   updatedAt: string;
 };
@@ -74,6 +92,12 @@ export type Donation = {
   paymentOrderId: string;
   paymentId: string;
   referenceId: string;
+  fundraiserId: number | null;
+  referralLinkId: number | null;
+  utmSource: string;
+  utmMedium: string;
+  utmCampaign: string;
+  utmContent: string;
   createdAt: string;
 };
 

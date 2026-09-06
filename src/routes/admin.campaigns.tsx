@@ -158,7 +158,7 @@ function CampaignsAdmin() {
             <Field label="Target amount (INR)" htmlFor="targetAmount">
               <Input id="targetAmount" name="targetAmount" type="number" min={0} defaultValue={editing.targetAmount} />
             </Field>
-            <Field label="Manual amount raised" htmlFor="manualAmountRaised" hint="Added to verified completed payments.">
+            <Field label="Manual amount raised" htmlFor="manualAmountRaised" hint="Kept for records. Public totals use verified completed payments only.">
               <Input id="manualAmountRaised" name="manualAmountRaised" type="number" min={0} defaultValue={editing.manualAmountRaised} />
             </Field>
             <Field label="Manual donor count" htmlFor="manualDonorCount">

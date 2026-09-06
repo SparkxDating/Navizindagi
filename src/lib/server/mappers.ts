@@ -82,9 +82,34 @@ export function mapCampaign(row: Record<string, unknown>): Campaign {
     isFeatured: bool(row.is_featured ?? row.isFeatured),
     isActive: bool(row.is_active ?? row.isActive),
     sortOrder: num(row.sort_order ?? row.sortOrder),
+    organizationId: num(row.organization_id ?? row.organizationId),
+    createdBy: text(row.created_by ?? row.createdBy),
+    status: campaignStatus(row.status, bool(row.is_active ?? row.isActive)),
+    category: text(row.category),
+    startAt: tsOrNull(row.start_at ?? row.startAt),
+    endAt: tsOrNull(row.end_at ?? row.endAt),
+    beneficiaryName: text(row.beneficiary_name ?? row.beneficiaryName),
+    videoUrl: text(row.video_url ?? row.videoUrl),
+    allowFundraisers: bool(row.allow_fundraisers ?? row.allowFundraisers),
+    allowRecurring: bool(row.allow_recurring ?? row.allowRecurring),
     createdAt: ts(row.created_at ?? row.createdAt),
     updatedAt: ts(row.updated_at ?? row.updatedAt),
   };
+}
+
+function campaignStatus(value: unknown, isActive: boolean): Campaign["status"] {
+  const status = text(value);
+  if (
+    status === "draft" ||
+    status === "pending_review" ||
+    status === "active" ||
+    status === "paused" ||
+    status === "completed" ||
+    status === "rejected"
+  ) {
+    return status;
+  }
+  return isActive ? "active" : "paused";
 }
 
 export function mapUpdate(row: Record<string, unknown>): CampaignUpdate {
@@ -122,6 +147,13 @@ export function mapDonation(row: Record<string, unknown>): Donation {
     paymentOrderId: text(row.payment_order_id ?? row.paymentOrderId),
     paymentId: text(row.payment_id ?? row.paymentId),
     referenceId: text(row.reference_id ?? row.referenceId),
+    fundraiserId: row.fundraiser_id == null && row.fundraiserId == null ? null : num(row.fundraiser_id ?? row.fundraiserId),
+    referralLinkId:
+      row.referral_link_id == null && row.referralLinkId == null ? null : num(row.referral_link_id ?? row.referralLinkId),
+    utmSource: text(row.utm_source ?? row.utmSource),
+    utmMedium: text(row.utm_medium ?? row.utmMedium),
+    utmCampaign: text(row.utm_campaign ?? row.utmCampaign),
+    utmContent: text(row.utm_content ?? row.utmContent),
     createdAt: ts(row.created_at ?? row.createdAt),
   };
 }
@@ -189,13 +221,15 @@ export const CAMPAIGN_SELECT = `
   c.id, c.slug, c.title, c.location_label, c.country_code, c.hero_image_url,
   c.short_description, c.situation_text, c.mission_text, c.relief_priorities,
   c.utilisation_notes, c.target_amount, c.manual_amount_raised, c.manual_donor_count,
-  c.is_featured, c.is_active, c.sort_order, c.created_at, c.updated_at,
-  (c.manual_amount_raised + coalesce((
+  c.is_featured, c.is_active, c.sort_order, c.organization_id, c.created_by, c.status,
+  c.category, c.start_at, c.end_at, c.beneficiary_name, c.video_url,
+  c.allow_fundraisers, c.allow_recurring, c.created_at, c.updated_at,
+  coalesce((
     select sum(d.amount) from donations d
     where d.campaign_id = c.id and d.status = 'completed'
-  ), 0))::int as amount_raised,
-  (c.manual_donor_count + coalesce((
+  ), 0)::int as amount_raised,
+  coalesce((
     select count(*) from donations d
     where d.campaign_id = c.id and d.status = 'completed'
-  ), 0))::int as donor_count
+  ), 0)::int as donor_count
 `;

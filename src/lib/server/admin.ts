@@ -1,6 +1,5 @@
 import { createServerFn } from "@tanstack/react-start";
 import { authMiddleware } from "@/lib/auth/middleware";
-import { getSessionUser } from "@/lib/auth/verify.server";
 import { getSql } from "@/lib/db";
 import {
   campaignInputSchema,
@@ -13,6 +12,12 @@ import {
 } from "@/lib/schemas";
 import type { DashboardStats } from "@/lib/types";
 import { parseStringList } from "@/lib/utils";
+import {
+  assertCampaignInWorkspace,
+  assertPermission,
+  resolveWorkspace,
+  type Workspace,
+} from "./access";
 import {
   CAMPAIGN_SELECT,
   mapCampaign,
@@ -27,50 +32,34 @@ import {
   num,
 } from "./mappers";
 
-class ForbiddenError extends Error {
-  readonly status = 403;
-  constructor(message = "This account is not authorised for the admin dashboard.") {
-    super(message);
-    this.name = "ForbiddenError";
-  }
-}
-
-async function assertAdmin(userId: string, bearerToken?: string) {
-  const sql = await getSql();
-  const admins = await sql<{ user_id: string }>`select user_id from admin_users`;
-  if (admins.length === 0) {
-    const session = await getSessionUser(bearerToken);
-    const bootstrapEmail = process.env.ADMIN_BOOTSTRAP_EMAIL?.trim().toLowerCase();
-    if (bootstrapEmail) {
-      const sessionEmail = session?.email?.trim().toLowerCase() ?? "";
-      if (!sessionEmail || sessionEmail !== bootstrapEmail) {
-        throw new ForbiddenError();
-      }
-    }
-    await sql.query(
-      `insert into admin_users (user_id, email, role) values ($1, $2, 'admin')
-       on conflict (user_id) do nothing`,
-      [userId, session?.email ?? ""],
-    );
-    return;
-  }
-  if (!admins.some((row) => row.user_id === userId)) {
-    throw new ForbiddenError();
-  }
+function workspacePayload(workspace: Workspace) {
+  return {
+    userId: workspace.userId,
+    isAdmin: true as const,
+    isPlatformAdmin: workspace.isPlatformAdmin,
+    organizationId: workspace.organizationId,
+    organizationName: workspace.organizationName,
+    organizationSlug: workspace.organizationSlug,
+    role: workspace.isPlatformAdmin ? ("platform_admin" as const) : workspace.role,
+    permissions: workspace.permissions,
+  };
 }
 
 export const getAdminContext = createServerFn({ method: "GET" })
   .middleware([authMiddleware])
   .handler(async ({ context }) => {
-    await assertAdmin(context.userId, context.bearerToken);
-    return { isAdmin: true as const, userId: context.userId };
+    const workspace = await resolveWorkspace(context.userId, context.bearerToken);
+    return workspacePayload(workspace);
   });
 
 export const getDashboard = createServerFn({ method: "GET" })
   .middleware([authMiddleware])
   .handler(async ({ context }) => {
-    await assertAdmin(context.userId, context.bearerToken);
+    const workspace = await resolveWorkspace(context.userId, context.bearerToken);
     const sql = await getSql();
+    const orgId = workspace.organizationId;
+    const allOrgs = workspace.isPlatformAdmin;
+    const showInbox = workspace.permissions.viewInbox;
     const [totals, campaigns, recentDonations, recentVolunteers, recentEnquiries] =
       await Promise.all([
         sql.query<{
@@ -79,30 +68,67 @@ export const getDashboard = createServerFn({ method: "GET" })
           sandbox_count: unknown;
           pending_count: unknown;
         }>(
-          `select
-             coalesce(sum(amount) filter (where status = 'completed'), 0)::int as donation_total,
-             count(*) filter (where status = 'completed')::int as completed_count,
-             count(*) filter (where status = 'sandbox')::int as sandbox_count,
-             count(*) filter (where status = 'pending')::int as pending_count
-           from donations`,
+          allOrgs
+            ? `select
+                 coalesce(sum(d.amount) filter (where d.status = 'completed'), 0)::int as donation_total,
+                 count(*) filter (where d.status = 'completed')::int as completed_count,
+                 count(*) filter (where d.status = 'sandbox')::int as sandbox_count,
+                 count(*) filter (where d.status = 'pending')::int as pending_count
+               from donations d`
+            : `select
+                 coalesce(sum(d.amount) filter (where d.status = 'completed'), 0)::int as donation_total,
+                 count(*) filter (where d.status = 'completed')::int as completed_count,
+                 count(*) filter (where d.status = 'sandbox')::int as sandbox_count,
+                 count(*) filter (where d.status = 'pending')::int as pending_count
+               from donations d
+               join campaigns c on c.id = d.campaign_id
+               where c.organization_id = $1`,
+          allOrgs ? [] : [orgId],
         ),
         sql.query<Record<string, unknown>>(
-          `select ${CAMPAIGN_SELECT} from campaigns c order by c.sort_order, c.id`,
+          allOrgs
+            ? `select ${CAMPAIGN_SELECT} from campaigns c order by c.sort_order, c.id`
+            : `select ${CAMPAIGN_SELECT} from campaigns c where c.organization_id = $1 order by c.sort_order, c.id`,
+          allOrgs ? [] : [orgId],
         ),
         sql.query<Record<string, unknown>>(
-          `select d.*, c.title as campaign_title, c.slug as campaign_slug
-           from donations d join campaigns c on c.id = d.campaign_id
-           order by d.created_at desc limit 8`,
+          allOrgs
+            ? `select d.*, c.title as campaign_title, c.slug as campaign_slug
+               from donations d join campaigns c on c.id = d.campaign_id
+               order by d.created_at desc limit 8`
+            : `select d.*, c.title as campaign_title, c.slug as campaign_slug
+               from donations d join campaigns c on c.id = d.campaign_id
+               where c.organization_id = $1
+               order by d.created_at desc limit 8`,
+          allOrgs ? [] : [orgId],
         ),
-        sql`select * from volunteers order by created_at desc limit 6`,
-        sql`select * from contact_enquiries order by created_at desc limit 6`,
+        showInbox
+          ? allOrgs
+            ? sql`select * from volunteers order by created_at desc limit 6`
+            : sql`select * from volunteers where organization_id = ${orgId} order by created_at desc limit 6`
+          : Promise.resolve([]),
+        showInbox
+          ? allOrgs
+            ? sql`select * from contact_enquiries order by created_at desc limit 6`
+            : sql`select * from contact_enquiries where organization_id = ${orgId} order by created_at desc limit 6`
+          : Promise.resolve([]),
       ]);
-    const volunteerCount = await sql.query<{ n: unknown }>(
-      `select count(*)::int as n from volunteers`,
-    );
-    const enquiryCount = await sql.query<{ n: unknown }>(
-      `select count(*)::int as n from contact_enquiries`,
-    );
+    const volunteerCount = showInbox
+      ? await sql.query<{ n: unknown }>(
+          allOrgs
+            ? `select count(*)::int as n from volunteers`
+            : `select count(*)::int as n from volunteers where organization_id = $1`,
+          allOrgs ? [] : [orgId],
+        )
+      : [{ n: 0 }];
+    const enquiryCount = showInbox
+      ? await sql.query<{ n: unknown }>(
+          allOrgs
+            ? `select count(*)::int as n from contact_enquiries`
+            : `select count(*)::int as n from contact_enquiries where organization_id = $1`,
+          allOrgs ? [] : [orgId],
+        )
+      : [{ n: 0 }];
     const row = totals[0];
     const mappedCampaigns = campaigns.map(mapCampaign);
     const stats: DashboardStats = {
@@ -132,10 +158,14 @@ export const getDashboard = createServerFn({ method: "GET" })
 export const listAdminCampaigns = createServerFn({ method: "GET" })
   .middleware([authMiddleware])
   .handler(async ({ context }) => {
-    await assertAdmin(context.userId, context.bearerToken);
+    const workspace = await resolveWorkspace(context.userId, context.bearerToken);
+    assertPermission(workspace, "viewCampaigns");
     const sql = await getSql();
     const rows = await sql.query<Record<string, unknown>>(
-      `select ${CAMPAIGN_SELECT} from campaigns c order by c.sort_order, c.id`,
+      workspace.isPlatformAdmin
+        ? `select ${CAMPAIGN_SELECT} from campaigns c order by c.sort_order, c.id`
+        : `select ${CAMPAIGN_SELECT} from campaigns c where c.organization_id = $1 order by c.sort_order, c.id`,
+      workspace.isPlatformAdmin ? [] : [workspace.organizationId],
     );
     return rows.map(mapCampaign);
   });
@@ -144,7 +174,8 @@ export const saveCampaign = createServerFn({ method: "POST" })
   .middleware([authMiddleware])
   .validator(campaignInputSchema)
   .handler(async ({ context, data }) => {
-    await assertAdmin(context.userId, context.bearerToken);
+    const workspace = await resolveWorkspace(context.userId, context.bearerToken);
+    assertPermission(workspace, "writeCampaigns");
     const sql = await getSql();
     const priorities = JSON.stringify(parseStringList(data.reliefPriorities));
     const countryCode = data.countryCode ?? "";
@@ -152,35 +183,69 @@ export const saveCampaign = createServerFn({ method: "POST" })
     const utilisation = data.utilisationNotes ?? "";
     const campaignStatus = data.isActive ? "active" : "paused";
     if (data.id) {
-      await sql.query(
-        `update campaigns set
-           slug=$1, title=$2, location_label=$3, country_code=$4, hero_image_url=$5,
-           short_description=$6, situation_text=$7, mission_text=$8, relief_priorities=$9,
-           utilisation_notes=$10, target_amount=$11, manual_amount_raised=$12,
-           manual_donor_count=$13, is_featured=$14, is_active=$15, sort_order=$16,
-           status=$17, updated_at=now()
-         where id=$18`,
-        [
-          data.slug,
-          data.title,
-          data.locationLabel,
-          countryCode,
-          hero,
-          data.shortDescription,
-          data.situationText,
-          data.missionText,
-          priorities,
-          utilisation,
-          data.targetAmount,
-          data.manualAmountRaised,
-          data.manualDonorCount,
-          data.isFeatured,
-          data.isActive,
-          data.sortOrder,
-          campaignStatus,
-          data.id,
-        ],
+      await assertCampaignInWorkspace(workspace, data.id);
+      const updated = await sql.query<{ id: number }>(
+        workspace.isPlatformAdmin
+          ? `update campaigns set
+               slug=$1, title=$2, location_label=$3, country_code=$4, hero_image_url=$5,
+               short_description=$6, situation_text=$7, mission_text=$8, relief_priorities=$9,
+               utilisation_notes=$10, target_amount=$11, manual_amount_raised=$12,
+               manual_donor_count=$13, is_featured=$14, is_active=$15, sort_order=$16,
+               status=$17, updated_at=now()
+             where id=$18
+             returning id`
+          : `update campaigns set
+               slug=$1, title=$2, location_label=$3, country_code=$4, hero_image_url=$5,
+               short_description=$6, situation_text=$7, mission_text=$8, relief_priorities=$9,
+               utilisation_notes=$10, target_amount=$11, manual_amount_raised=$12,
+               manual_donor_count=$13, is_featured=$14, is_active=$15, sort_order=$16,
+               status=$17, updated_at=now()
+             where id=$18 and organization_id=$19
+             returning id`,
+        workspace.isPlatformAdmin
+          ? [
+              data.slug,
+              data.title,
+              data.locationLabel,
+              countryCode,
+              hero,
+              data.shortDescription,
+              data.situationText,
+              data.missionText,
+              priorities,
+              utilisation,
+              data.targetAmount,
+              data.manualAmountRaised,
+              data.manualDonorCount,
+              data.isFeatured,
+              data.isActive,
+              data.sortOrder,
+              campaignStatus,
+              data.id,
+            ]
+          : [
+              data.slug,
+              data.title,
+              data.locationLabel,
+              countryCode,
+              hero,
+              data.shortDescription,
+              data.situationText,
+              data.missionText,
+              priorities,
+              utilisation,
+              data.targetAmount,
+              data.manualAmountRaised,
+              data.manualDonorCount,
+              data.isFeatured,
+              data.isActive,
+              data.sortOrder,
+              campaignStatus,
+              data.id,
+              workspace.organizationId,
+            ],
       );
+      if (!updated[0]) throw new Error("That campaign is not in your organization.");
       return { ok: true as const, id: data.id };
     }
     const inserted = await sql.query<{ id: number }>(
@@ -191,9 +256,9 @@ export const saveCampaign = createServerFn({ method: "POST" })
          organization_id, created_by, status
        ) values (
          $1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,
-         (select id from organizations where slug = 'navi-zindagi-foundation' limit 1),
-         (select id from "user" where id = $17),
-         $18
+         $17,
+         (select id from "user" where id = $18),
+         $19
        )
        returning id`,
       [
@@ -213,6 +278,7 @@ export const saveCampaign = createServerFn({ method: "POST" })
         data.isFeatured,
         data.isActive,
         data.sortOrder,
+        workspace.organizationId,
         context.userId,
         campaignStatus,
       ],
@@ -223,12 +289,19 @@ export const saveCampaign = createServerFn({ method: "POST" })
 export const listDonations = createServerFn({ method: "GET" })
   .middleware([authMiddleware])
   .handler(async ({ context }) => {
-    await assertAdmin(context.userId, context.bearerToken);
+    const workspace = await resolveWorkspace(context.userId, context.bearerToken);
+    assertPermission(workspace, "viewDonations");
     const sql = await getSql();
     const rows = await sql.query<Record<string, unknown>>(
-      `select d.*, c.title as campaign_title, c.slug as campaign_slug
-       from donations d join campaigns c on c.id = d.campaign_id
-       order by d.created_at desc`,
+      workspace.isPlatformAdmin
+        ? `select d.*, c.title as campaign_title, c.slug as campaign_slug
+           from donations d join campaigns c on c.id = d.campaign_id
+           order by d.created_at desc`
+        : `select d.*, c.title as campaign_title, c.slug as campaign_slug
+           from donations d join campaigns c on c.id = d.campaign_id
+           where c.organization_id = $1
+           order by d.created_at desc`,
+      workspace.isPlatformAdmin ? [] : [workspace.organizationId],
     );
     return rows.map(mapDonation);
   });
@@ -236,28 +309,51 @@ export const listDonations = createServerFn({ method: "GET" })
 export const listVolunteers = createServerFn({ method: "GET" })
   .middleware([authMiddleware])
   .handler(async ({ context }) => {
-    await assertAdmin(context.userId, context.bearerToken);
+    const workspace = await resolveWorkspace(context.userId, context.bearerToken);
+    assertPermission(workspace, "viewInbox");
     const sql = await getSql();
-    const rows = await sql`select * from volunteers order by created_at desc`;
+    const rows = workspace.isPlatformAdmin
+      ? await sql`select * from volunteers order by created_at desc`
+      : await sql`select * from volunteers where organization_id = ${workspace.organizationId} order by created_at desc`;
     return rows.map(mapVolunteer);
   });
 
 export const listEnquiries = createServerFn({ method: "GET" })
   .middleware([authMiddleware])
   .handler(async ({ context }) => {
-    await assertAdmin(context.userId, context.bearerToken);
+    const workspace = await resolveWorkspace(context.userId, context.bearerToken);
+    assertPermission(workspace, "viewInbox");
     const sql = await getSql();
-    const rows = await sql`select * from contact_enquiries order by created_at desc`;
+    const rows = workspace.isPlatformAdmin
+      ? await sql`select * from contact_enquiries order by created_at desc`
+      : await sql`select * from contact_enquiries where organization_id = ${workspace.organizationId} order by created_at desc`;
     return rows.map(mapEnquiry);
   });
 
 export const listUpdatesAdmin = createServerFn({ method: "GET" })
   .middleware([authMiddleware])
   .handler(async ({ context }) => {
-    await assertAdmin(context.userId, context.bearerToken);
+    const workspace = await resolveWorkspace(context.userId, context.bearerToken);
+    assertPermission(workspace, "viewCampaigns");
     const sql = await getSql();
-    const rows = await sql`select * from campaign_updates order by created_at desc`;
-    const campaigns = await sql<{ id: number; title: string }>`select id, title from campaigns order by sort_order, id`;
+    const rows = workspace.isPlatformAdmin
+      ? await sql.query<Record<string, unknown>>(
+          `select u.*, c.title as campaign_title from campaign_updates u
+           join campaigns c on c.id = u.campaign_id
+           order by u.created_at desc`,
+        )
+      : await sql.query<Record<string, unknown>>(
+          `select u.*, c.title as campaign_title from campaign_updates u
+           join campaigns c on c.id = u.campaign_id
+           where c.organization_id = $1
+           order by u.created_at desc`,
+          [workspace.organizationId],
+        );
+    const campaigns = workspace.isPlatformAdmin
+      ? await sql<{ id: number; title: string }>`select id, title from campaigns order by sort_order, id`
+      : await sql<{ id: number; title: string }>`
+          select id, title from campaigns where organization_id = ${workspace.organizationId} order by sort_order, id
+        `;
     return { updates: rows.map(mapUpdate), campaigns };
   });
 
@@ -265,14 +361,31 @@ export const saveUpdate = createServerFn({ method: "POST" })
   .middleware([authMiddleware])
   .validator(updateInputSchema)
   .handler(async ({ context, data }) => {
-    await assertAdmin(context.userId, context.bearerToken);
+    const workspace = await resolveWorkspace(context.userId, context.bearerToken);
+    assertPermission(workspace, "writeCampaigns");
+    await assertCampaignInWorkspace(workspace, data.campaignId);
     const sql = await getSql();
     if (data.id) {
-      await sql.query(
-        `update campaign_updates set campaign_id=$1, title=$2, body=$3, published_at=$4
-         where id=$5`,
-        [data.campaignId, data.title, data.body, data.published ? new Date().toISOString() : null, data.id],
+      const updated = await sql.query<{ id: number }>(
+        workspace.isPlatformAdmin
+          ? `update campaign_updates set campaign_id=$1, title=$2, body=$3, published_at=$4
+             where id=$5 returning id`
+          : `update campaign_updates u set campaign_id=$1, title=$2, body=$3, published_at=$4
+             from campaigns c
+             where u.id=$5 and u.campaign_id = c.id and c.organization_id=$6
+             returning u.id`,
+        workspace.isPlatformAdmin
+          ? [data.campaignId, data.title, data.body, data.published ? new Date().toISOString() : null, data.id]
+          : [
+              data.campaignId,
+              data.title,
+              data.body,
+              data.published ? new Date().toISOString() : null,
+              data.id,
+              workspace.organizationId,
+            ],
       );
+      if (!updated[0]) throw new Error("That update is not in your organization.");
       return { ok: true as const };
     }
     await sql.query(
@@ -287,9 +400,19 @@ export const deleteUpdate = createServerFn({ method: "POST" })
   .middleware([authMiddleware])
   .validator(idSchema)
   .handler(async ({ context, data }) => {
-    await assertAdmin(context.userId, context.bearerToken);
+    const workspace = await resolveWorkspace(context.userId, context.bearerToken);
+    assertPermission(workspace, "writeCampaigns");
     const sql = await getSql();
-    await sql`delete from campaign_updates where id = ${data.id}`;
+    const deleted = workspace.isPlatformAdmin
+      ? await sql.query<{ id: number }>(`delete from campaign_updates where id = $1 returning id`, [data.id])
+      : await sql.query<{ id: number }>(
+          `delete from campaign_updates u
+           using campaigns c
+           where u.id = $1 and u.campaign_id = c.id and c.organization_id = $2
+           returning u.id`,
+          [data.id, workspace.organizationId],
+        );
+    if (!deleted[0]) throw new Error("That update is not in your organization.");
     return { ok: true as const };
   });
 
@@ -297,7 +420,8 @@ export const saveSettings = createServerFn({ method: "POST" })
   .middleware([authMiddleware])
   .validator(settingsInputSchema)
   .handler(async ({ context, data }) => {
-    await assertAdmin(context.userId, context.bearerToken);
+    const workspace = await resolveWorkspace(context.userId, context.bearerToken);
+    assertPermission(workspace, "platformSite");
     const sql = await getSql();
     await sql.query(
       `update ngo_settings set
@@ -335,7 +459,8 @@ export const saveSettings = createServerFn({ method: "POST" })
 export const getAdminSettings = createServerFn({ method: "GET" })
   .middleware([authMiddleware])
   .handler(async ({ context }) => {
-    await assertAdmin(context.userId, context.bearerToken);
+    const workspace = await resolveWorkspace(context.userId, context.bearerToken);
+    assertPermission(workspace, "platformSite");
     const sql = await getSql();
     const rows = await sql<Record<string, unknown>>`select * from ngo_settings where id = 1`;
     if (!rows[0]) throw new Error("NGO settings are not initialised");
@@ -345,7 +470,8 @@ export const getAdminSettings = createServerFn({ method: "GET" })
 export const listReportsAdmin = createServerFn({ method: "GET" })
   .middleware([authMiddleware])
   .handler(async ({ context }) => {
-    await assertAdmin(context.userId, context.bearerToken);
+    const workspace = await resolveWorkspace(context.userId, context.bearerToken);
+    assertPermission(workspace, "platformSite");
     const sql = await getSql();
     const rows = await sql`select * from reports order by created_at desc`;
     return rows.map(mapReport);
@@ -355,7 +481,8 @@ export const saveReport = createServerFn({ method: "POST" })
   .middleware([authMiddleware])
   .validator(reportInputSchema)
   .handler(async ({ context, data }) => {
-    await assertAdmin(context.userId, context.bearerToken);
+    const workspace = await resolveWorkspace(context.userId, context.bearerToken);
+    assertPermission(workspace, "platformSite");
     const sql = await getSql();
     if (data.id) {
       await sql.query(
@@ -386,7 +513,8 @@ export const deleteReport = createServerFn({ method: "POST" })
   .middleware([authMiddleware])
   .validator(idSchema)
   .handler(async ({ context, data }) => {
-    await assertAdmin(context.userId, context.bearerToken);
+    const workspace = await resolveWorkspace(context.userId, context.bearerToken);
+    assertPermission(workspace, "platformSite");
     const sql = await getSql();
     await sql`delete from reports where id = ${data.id}`;
     return { ok: true as const };
@@ -395,7 +523,8 @@ export const deleteReport = createServerFn({ method: "POST" })
 export const listTeamAdmin = createServerFn({ method: "GET" })
   .middleware([authMiddleware])
   .handler(async ({ context }) => {
-    await assertAdmin(context.userId, context.bearerToken);
+    const workspace = await resolveWorkspace(context.userId, context.bearerToken);
+    assertPermission(workspace, "platformSite");
     const sql = await getSql();
     const rows = await sql`select * from team_members order by sort_order, id`;
     return rows.map(mapTeam);
@@ -405,7 +534,8 @@ export const saveTeamMember = createServerFn({ method: "POST" })
   .middleware([authMiddleware])
   .validator(teamInputSchema)
   .handler(async ({ context, data }) => {
-    await assertAdmin(context.userId, context.bearerToken);
+    const workspace = await resolveWorkspace(context.userId, context.bearerToken);
+    assertPermission(workspace, "platformSite");
     const sql = await getSql();
     if (data.id) {
       await sql.query(
@@ -425,7 +555,8 @@ export const deleteTeamMember = createServerFn({ method: "POST" })
   .middleware([authMiddleware])
   .validator(idSchema)
   .handler(async ({ context, data }) => {
-    await assertAdmin(context.userId, context.bearerToken);
+    const workspace = await resolveWorkspace(context.userId, context.bearerToken);
+    assertPermission(workspace, "platformSite");
     const sql = await getSql();
     await sql`delete from team_members where id = ${data.id}`;
     return { ok: true as const };
@@ -434,7 +565,8 @@ export const deleteTeamMember = createServerFn({ method: "POST" })
 export const listFaqsAdmin = createServerFn({ method: "GET" })
   .middleware([authMiddleware])
   .handler(async ({ context }) => {
-    await assertAdmin(context.userId, context.bearerToken);
+    const workspace = await resolveWorkspace(context.userId, context.bearerToken);
+    assertPermission(workspace, "platformSite");
     const sql = await getSql();
     const rows = await sql`select * from faqs order by sort_order, id`;
     return rows.map(mapFaq);
@@ -444,7 +576,8 @@ export const saveFaq = createServerFn({ method: "POST" })
   .middleware([authMiddleware])
   .validator(faqInputSchema)
   .handler(async ({ context, data }) => {
-    await assertAdmin(context.userId, context.bearerToken);
+    const workspace = await resolveWorkspace(context.userId, context.bearerToken);
+    assertPermission(workspace, "platformSite");
     const sql = await getSql();
     if (data.id) {
       await sql.query(
@@ -464,7 +597,8 @@ export const deleteFaq = createServerFn({ method: "POST" })
   .middleware([authMiddleware])
   .validator(idSchema)
   .handler(async ({ context, data }) => {
-    await assertAdmin(context.userId, context.bearerToken);
+    const workspace = await resolveWorkspace(context.userId, context.bearerToken);
+    assertPermission(workspace, "platformSite");
     const sql = await getSql();
     await sql`delete from faqs where id = ${data.id}`;
     return { ok: true as const };

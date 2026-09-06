@@ -125,8 +125,8 @@ export const submitVolunteer = createServerFn({ method: "POST" })
     const sql = await getSql();
     await sql.query(
       `insert into volunteers
-        (full_name, email, phone, city, state_country, areas_of_interest, availability, skills, message, consent)
-       values ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10)`,
+        (full_name, email, phone, city, state_country, areas_of_interest, availability, skills, message, consent, organization_id)
+       values ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,(select id from organizations where slug = 'navi-zindagi-foundation' limit 1))`,
       [
         sanitizePlainText(data.fullName, 120),
         sanitizePlainText(data.email, 200),
@@ -153,8 +153,8 @@ export const submitEnquiry = createServerFn({ method: "POST" })
     }
     const sql = await getSql();
     await sql.query(
-      `insert into contact_enquiries (name, email, phone, subject, message)
-       values ($1,$2,$3,$4,$5)`,
+      `insert into contact_enquiries (name, email, phone, subject, message, organization_id)
+       values ($1,$2,$3,$4,$5,(select id from organizations where slug = 'navi-zindagi-foundation' limit 1))`,
       [sanitizePlainText(data.name, 120), sanitizePlainText(data.email, 200), sanitizePlainText(data.phone ?? "", 20), sanitizePlainText(data.subject, 160), sanitizeMultiline(data.message, 2000)],
     );
     return { ok: true as const };

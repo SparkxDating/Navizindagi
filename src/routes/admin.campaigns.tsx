@@ -7,6 +7,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Field } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { useAdminWorkspace } from "@/components/admin/admin-gate";
 import { listAdminCampaigns, saveCampaign } from "@/lib/server/admin";
 import type { Campaign } from "@/lib/types";
 
@@ -36,6 +37,8 @@ function emptyCampaign(): Partial<Campaign> & { reliefPrioritiesText: string } {
 }
 
 function CampaignsAdmin() {
+  const workspace = useAdminWorkspace();
+  const canWrite = workspace.permissions.writeCampaigns;
   const { data, error, loading, reload } = useAdminQuery(() => listAdminCampaigns());
   const campaigns = data ?? [];
   const [editing, setEditing] = useState<(Partial<Campaign> & { reliefPrioritiesText: string }) | null>(null);
@@ -102,9 +105,11 @@ function CampaignsAdmin() {
     <div className="space-y-6">
       <div className="flex items-center justify-between gap-3">
         <h1 className="font-display text-3xl text-navy">Campaigns</h1>
-        <Button type="button" onClick={() => startEdit()}>
-          New campaign
-        </Button>
+        {canWrite ? (
+          <Button type="button" onClick={() => startEdit()}>
+            New campaign
+          </Button>
+        ) : null}
       </div>
       <div className="space-y-3">
         {campaigns.map((campaign) => (
@@ -115,9 +120,11 @@ function CampaignsAdmin() {
                 /campaign/{campaign.slug} · {campaign.isActive ? "Active" : "Hidden"}
               </p>
             </div>
-            <Button type="button" size="sm" variant="outline" onClick={() => startEdit(campaign)}>
-              Edit
-            </Button>
+            {canWrite ? (
+              <Button type="button" size="sm" variant="outline" onClick={() => startEdit(campaign)}>
+                Edit
+              </Button>
+            ) : null}
           </article>
         ))}
       </div>

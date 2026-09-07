@@ -50,11 +50,9 @@ async function ensurePlatformBootstrap(userId: string, bearerToken?: string) {
   if (admins.length === 0) {
     const session = await getSessionUser(bearerToken);
     const bootstrapEmail = process.env.ADMIN_BOOTSTRAP_EMAIL?.trim().toLowerCase();
-    if (bootstrapEmail) {
-      const sessionEmail = session?.email?.trim().toLowerCase() ?? "";
-      if (!sessionEmail || sessionEmail !== bootstrapEmail) {
-        throw new ForbiddenError("This account is not authorised for the dashboard.");
-      }
+    const sessionEmail = session?.email?.trim().toLowerCase() ?? "";
+    if (!bootstrapEmail || !sessionEmail || sessionEmail !== bootstrapEmail) {
+      throw new ForbiddenError("This account is not authorised for the dashboard.");
     }
     await sql.query(
       `insert into admin_users (user_id, email, role) values ($1, $2, 'platform_admin')

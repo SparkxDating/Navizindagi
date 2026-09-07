@@ -66,16 +66,31 @@ export function decidePaymentCompletion(input: {
   donation: LocalDonation | null;
   payment: GatewayPayment;
   paymentAlreadyOnDonationId: number | null;
+  claimed?: Pick<LocalDonation, "id" | "campaignId" | "organizationId"> | null;
 }): CompleteDecision {
-  const { donation, payment, paymentAlreadyOnDonationId } = input;
+  const { donation, payment, paymentAlreadyOnDonationId, claimed } = input;
   if (!donation) return { action: "reject", reason: "unknown_donation" };
   if (!payment.id || !payment.orderId) return { action: "reject", reason: "missing_payment" };
   if (!donation.paymentOrderId) return { action: "reject", reason: "missing_order" };
   if (donation.paymentOrderId !== payment.orderId) {
     return { action: "reject", reason: "order_mismatch" };
   }
+  if (!donation.campaignId || !donation.organizationId) {
+    return { action: "reject", reason: "missing_tenant" };
+  }
+  if (
+    claimed &&
+    (claimed.id !== donation.id ||
+      claimed.campaignId !== donation.campaignId ||
+      claimed.organizationId !== donation.organizationId)
+  ) {
+    return { action: "reject", reason: "tenant_mismatch" };
+  }
   if (paymentAlreadyOnDonationId != null && paymentAlreadyOnDonationId !== donation.id) {
     return { action: "reject", reason: "payment_id_reused" };
+  }
+  if (!Number.isInteger(payment.amountPaise) || payment.amountPaise <= 0) {
+    return { action: "reject", reason: "amount_mismatch" };
   }
   if (payment.amountPaise !== expectedPaise(donation.amount)) {
     return { action: "reject", reason: "amount_mismatch" };

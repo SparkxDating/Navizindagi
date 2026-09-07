@@ -136,6 +136,44 @@ describe("payment completion decisions", () => {
     assert.equal(decision.action, "reject");
     if (decision.action === "reject") assert.equal(decision.reason, "unknown_donation");
   });
+
+  it("does not attach a payment to a donation belonging to an unrelated campaign or organization", () => {
+    const foreignDonation = donation({
+      id: 99,
+      campaignId: 88,
+      organizationId: 2,
+      paymentOrderId: "order_abc",
+    });
+    const decision = decidePaymentCompletion({
+      donation: foreignDonation,
+      payment: payment({ orderId: "order_abc" }),
+      paymentAlreadyOnDonationId: null,
+      claimed: { id: 10, campaignId: 7, organizationId: 3 },
+    });
+    assert.equal(decision.action, "reject");
+    if (decision.action === "reject") assert.equal(decision.reason, "tenant_mismatch");
+  });
+
+  it("does not complete a donation that is missing campaign or organization", () => {
+    const decision = decidePaymentCompletion({
+      donation: donation({ organizationId: 0 }),
+      payment: payment(),
+      paymentAlreadyOnDonationId: null,
+    });
+    assert.equal(decision.action, "reject");
+    if (decision.action === "reject") assert.equal(decision.reason, "missing_tenant");
+  });
+
+  it("completes when the claimed donation is the same campaign and organization", () => {
+    const local = donation({ id: 10, campaignId: 7, organizationId: 3 });
+    const decision = decidePaymentCompletion({
+      donation: local,
+      payment: payment(),
+      paymentAlreadyOnDonationId: null,
+      claimed: { id: 10, campaignId: 7, organizationId: 3 },
+    });
+    assert.equal(decision.action, "complete");
+  });
 });
 
 describe("webhook payload parsing", () => {

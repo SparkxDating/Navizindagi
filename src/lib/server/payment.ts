@@ -54,10 +54,7 @@ async function razorpayGet<T>(path: string): Promise<T> {
     headers: { Authorization: razorpayAuthHeader() },
   });
   if (!response.ok) {
-    const detail = await response.text();
-    throw new Error(
-      `The payment gateway could not confirm this payment. ${detail.slice(0, 160) || "Please try again."}`,
-    );
+    throw new Error("The payment gateway could not confirm this payment. Please try again.");
   }
   return (await response.json()) as T;
 }
@@ -86,7 +83,7 @@ async function donationByOrderId(orderId: string) {
      where d.payment_order_id = $1`,
     [orderId],
   );
-  return rows[0] ?? null;
+  return rows.length === 1 ? rows[0] : null;
 }
 
 async function paymentOwnerId(paymentId: string) {
@@ -99,7 +96,10 @@ async function paymentOwnerId(paymentId: string) {
   return rows[0]?.id ?? null;
 }
 
-export async function completeCapturedPayment(payment: GatewayPayment) {
+export async function completeCapturedPayment(
+  payment: GatewayPayment,
+  claimed?: Pick<LocalDonation, "id" | "campaignId" | "organizationId"> | null,
+) {
   const sql = await getSql();
   const row = await donationByOrderId(payment.orderId);
   const donation = row ? toLocalDonation(row) : null;
@@ -108,6 +108,7 @@ export async function completeCapturedPayment(payment: GatewayPayment) {
     donation,
     payment,
     paymentAlreadyOnDonationId: owner,
+    claimed: claimed ?? null,
   });
   if (decision.action === "reject") {
     throw new Error("Payment could not be applied to this donation.");
@@ -127,8 +128,14 @@ export async function completeCapturedPayment(payment: GatewayPayment) {
        and amount = $5
        and status in ('pending','failed')
        and (payment_id = '' or payment_id = $1)
+       and exists (
+         select 1 from campaigns c
+         where c.id = donations.campaign_id
+           and c.id = $4
+           and c.organization_id = $6
+       )
      returning id, reference_id`,
-    [payment.id, payment.orderId, donation.id, donation.campaignId, donation.amount],
+    [payment.id, payment.orderId, donation.id, donation.campaignId, donation.amount, donation.organizationId],
   );
   if (!updated[0]) {
     const again = await donationByOrderId(payment.orderId);
@@ -212,11 +219,8 @@ export const createDonation = createServerFn({ method: "POST" })
         }),
       });
       if (!response.ok) {
-        const detail = await response.text();
         await sql`update donations set status = 'failed', updated_at = now() where reference_id = ${referenceId}`;
-        throw new Error(
-          `The payment gateway could not create an order. ${detail.slice(0, 180) || "Please try again."}`,
-        );
+        throw new Error("The payment gateway could not create an order. Please try again.");
       }
       const order = (await response.json()) as { id?: string };
       if (!order.id) {
@@ -276,7 +280,8 @@ export const verifyRazorpayPayment = createServerFn({ method: "POST" })
       [data.referenceId],
     );
     const donation = rows[0] ? mapDonation(rows[0]) : null;
-    if (!donation) throw new Error("Donation record not found.");
+    const claimed = rows[0] ? toLocalDonation(rows[0]) : null;
+    if (!donation || !claimed) throw new Error("Donation record not found.");
     if (donation.status === "completed" && donation.paymentId === data.razorpayPaymentId) {
       return { ok: true as const, referenceId: data.referenceId };
     }
@@ -296,6 +301,12 @@ export const verifyRazorpayPayment = createServerFn({ method: "POST" })
     if (!payment.id || payment.id !== data.razorpayPaymentId) {
       throw new Error("Gateway payment id could not be confirmed.");
     }
+    if (String(payment.order_id ?? "") !== donation.paymentOrderId) {
+      throw new Error("Gateway payment does not belong to this donation order.");
+    }
+    if (String(payment.order_id ?? "") !== data.razorpayOrderId) {
+      throw new Error("Gateway payment does not belong to this donation order.");
+    }
 
     const order = await razorpayGet<{
       id?: string;
@@ -311,13 +322,16 @@ export const verifyRazorpayPayment = createServerFn({ method: "POST" })
       throw new Error("Gateway order is not marked paid.");
     }
 
-    const result = await completeCapturedPayment({
-      id: payment.id,
-      orderId: String(payment.order_id ?? ""),
-      amountPaise: Number(payment.amount),
-      currency: String(payment.currency ?? "INR"),
-      captured: payment.captured === true || (payment.status ?? "").toLowerCase() === "captured",
-    });
+    const result = await completeCapturedPayment(
+      {
+        id: payment.id,
+        orderId: String(payment.order_id ?? ""),
+        amountPaise: Number(payment.amount),
+        currency: String(payment.currency ?? "INR"),
+        captured: payment.captured === true || (payment.status ?? "").toLowerCase() === "captured",
+      },
+      claimed,
+    );
     return { ok: true as const, referenceId: result.referenceId || data.referenceId };
   });
 

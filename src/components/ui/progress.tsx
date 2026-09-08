@@ -1,3 +1,4 @@
+import { useLanguage } from "@/lib/i18n";
 import { cn, progressPercent } from "@/lib/utils";
 
 export function ProgressBar({
@@ -9,6 +10,7 @@ export function ProgressBar({
   target: number;
   className?: string;
 }) {
+  const { t } = useLanguage();
   const percent = progressPercent(raised, target);
   const unknown = !target;
   return (
@@ -19,7 +21,7 @@ export function ProgressBar({
         aria-valuemin={0}
         aria-valuemax={100}
         aria-valuenow={unknown ? undefined : percent}
-        aria-label={unknown ? "Fundraising target to be updated" : `${percent}% of target`}
+        aria-label={unknown ? t("progress.unknown") : t("progress.ofTarget", { percent })}
       >
         <div
           className="h-full rounded-full bg-teal transition-[width] duration-500 ease-[cubic-bezier(0.22,1,0.36,1)]"
@@ -27,7 +29,7 @@ export function ProgressBar({
         />
       </div>
       <p className="text-xs text-muted-foreground">
-        {unknown ? "Fundraising target: To be updated" : `${percent}% of published target`}
+        {unknown ? t("progress.targetUnknown") : t("progress.published", { percent })}
       </p>
     </div>
   );

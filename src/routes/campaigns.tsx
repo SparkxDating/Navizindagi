@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { CampaignCard } from "@/components/campaign-card";
 import { PageHero, Section } from "@/components/section";
+import { useLanguage, usePageSeo } from "@/lib/i18n";
 import { getPublicSite } from "@/lib/server/site";
 import { SITE_URL } from "@/lib/site";
 
@@ -24,15 +25,17 @@ export const Route = createFileRoute("/campaigns")({
 
 function CampaignsPage() {
   const { campaigns } = Route.useLoaderData();
+  const { t } = useLanguage();
+  usePageSeo(t("seo.campaignsTitle"), t("seo.campaignsDescription"));
 
   return (
     <>
       <PageHero
-        eyebrow="Campaigns"
-        title="Choose a flood-relief appeal"
-        lead="Each campaign publishes its own situation notes, fundraising figures and updates. Figures stay at “Updates coming soon” until the Foundation records them."
+        eyebrow={t("campaigns.eyebrow")}
+        title={t("campaigns.title")}
+        lead={t("campaigns.lead")}
         image="/facebook-cover.jpg"
-        imageAlt="Flood relief campaigns"
+        imageAlt={t("campaigns.title")}
       />
       <Section>
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">

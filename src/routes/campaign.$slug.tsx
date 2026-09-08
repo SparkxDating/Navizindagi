@@ -6,6 +6,7 @@ import { UpdateCard } from "@/components/update-card";
 import { Button } from "@/components/ui/button";
 import { ProgressBar } from "@/components/ui/progress";
 import { StatTile } from "@/components/stat-tile";
+import { dateLocale, displayCampaignTitle, useLanguage, usePageSeo } from "@/lib/i18n";
 import { getCampaignPage } from "@/lib/server/site";
 import { RELIEF_CATEGORIES, SITE_URL } from "@/lib/site";
 import { formatDate, formatINR } from "@/lib/utils";
@@ -41,27 +42,33 @@ export const Route = createFileRoute("/campaign/$slug")({
   },
 });
 
-function campaignStatusLabel(status: string, isActive: boolean) {
-  if (status === "active" && isActive) return "Active";
-  if (status === "paused") return "Paused";
-  if (status === "completed") return "Completed";
-  return isActive ? "Active" : status;
-}
-
 function CampaignPage() {
   const { campaign, updates, campaigns, settings } = Route.useLoaderData();
+  const { t, language, tValue } = useLanguage();
+  const locale = dateLocale(language);
+  const title = campaign ? displayCampaignTitle(language, campaign.slug, campaign.title) : "";
+  const description = campaign ? tValue({ en: campaign.shortDescription, hi: null }) : "";
+  usePageSeo(title ? `${title} · Navi Zindagi Foundation` : t("seo.campaignsTitle"), description);
   if (!campaign) return null;
   const others = campaigns.filter((item) => item.id !== campaign.id && item.slug !== "general-relief");
   const hasFigures = campaign.targetAmount > 0 || campaign.amountRaised > 0;
+  const fallback = t("common.toBeUpdated");
   const gallery = [
-    campaign.heroImageUrl ? { src: campaign.heroImageUrl, alt: `${campaign.title} campaign` } : null,
+    campaign.heroImageUrl ? { src: campaign.heroImageUrl, alt: title } : null,
     ...RELIEF_CATEGORIES.filter((item) =>
       campaign.reliefPriorities.some((priority) => priority.toLowerCase().includes(item.title.split(" ")[0].toLowerCase())),
-    ).map((item) => ({ src: item.image, alt: `${item.title} for flood relief` })),
+    ).map((item) => ({ src: item.image, alt: t("campaign.reliefAlt", { title: item.title }) })),
   ].filter((item, index, list): item is { src: string; alt: string } => {
     if (!item) return false;
     return list.findIndex((other) => other?.src === item.src) === index;
   });
+
+  function statusLabel(status: string, isActive: boolean) {
+    if (status === "active" && isActive) return t("campaign.active");
+    if (status === "paused") return t("campaign.paused");
+    if (status === "completed") return t("campaign.completed");
+    return isActive ? t("campaign.active") : status;
+  }
 
   return (
     <>
@@ -69,7 +76,7 @@ function CampaignPage() {
         {campaign.heroImageUrl ? (
           <img
             src={campaign.heroImageUrl}
-            alt={`${campaign.title} in ${campaign.locationLabel}`}
+            alt={`${title} · ${campaign.locationLabel}`}
             className="absolute inset-0 size-full object-cover opacity-45"
             fetchPriority="high"
           />
@@ -77,17 +84,19 @@ function CampaignPage() {
         <div className="absolute inset-0 bg-navy/75" />
         <div className="relative mx-auto max-w-6xl px-4 py-16 sm:px-6 sm:py-24">
           <p className="text-xs font-semibold uppercase tracking-[0.18em] text-teal-soft">{campaign.locationLabel}</p>
-          <h1 className="mt-3 max-w-3xl font-display text-3xl text-cream sm:text-5xl">{campaign.title}</h1>
-          <p className="mt-4 max-w-2xl text-base text-cream/85">{campaign.shortDescription}</p>
+          <h1 className="mt-3 max-w-3xl font-display text-3xl text-cream sm:text-5xl">{title}</h1>
+          <p className="mt-4 max-w-2xl text-base text-cream/85">{description}</p>
           <div className="mt-5 flex flex-wrap items-center gap-3 text-sm text-cream/80">
             <span className="rounded-full bg-teal px-3 py-1 text-xs font-semibold text-primary-foreground">
-              {campaignStatusLabel(campaign.status, campaign.isActive)}
+              {statusLabel(campaign.status, campaign.isActive)}
             </span>
-            <span>Last updated {formatDate(campaign.updatedAt)}</span>
+            <span>
+              {t("campaign.lastUpdated")} {formatDate(campaign.updatedAt, locale)}
+            </span>
           </div>
           <Button asChild size="lg" className="mt-8">
             <Link to="/donate" search={{ campaign: campaign.slug }}>
-              Donate to this campaign
+              {t("campaign.donateThis")}
             </Link>
           </Button>
         </div>
@@ -96,15 +105,15 @@ function CampaignPage() {
       <div className="mx-auto grid max-w-6xl gap-10 px-4 py-12 sm:px-6 lg:grid-cols-[1.15fr_0.85fr]">
         <div className="space-y-12">
           <section>
-            <h2 className="font-display text-2xl text-navy">Situation</h2>
-            <Prose className="mt-4" text={campaign.situationText} />
+            <h2 className="font-display text-2xl text-navy">{t("campaign.situation")}</h2>
+            <Prose className="mt-4" text={tValue({ en: campaign.situationText, hi: null })} />
           </section>
           <section>
-            <h2 className="font-display text-2xl text-navy">Our response</h2>
-            <Prose className="mt-4" text={campaign.missionText} />
+            <h2 className="font-display text-2xl text-navy">{t("campaign.response")}</h2>
+            <Prose className="mt-4" text={tValue({ en: campaign.missionText, hi: null })} />
             <ul className="mt-6 space-y-2 text-muted-foreground">
               {campaign.reliefPriorities.length === 0 ? (
-                <li>To be updated</li>
+                <li>{fallback}</li>
               ) : (
                 campaign.reliefPriorities.map((item) => (
                   <li key={item} className="flex gap-3">
@@ -116,43 +125,39 @@ function CampaignPage() {
             </ul>
           </section>
           <section>
-            <h2 className="font-display text-2xl text-navy">Fundraising progress</h2>
+            <h2 className="font-display text-2xl text-navy">{t("campaign.progress")}</h2>
             <div className="mt-4 rounded-2xl bg-cream p-5">
               {hasFigures ? (
                 <>
-                  <p className="font-display text-3xl tabular-nums text-navy">{formatINR(campaign.amountRaised)}</p>
+                  <p className="font-display text-3xl tabular-nums text-navy">{formatINR(campaign.amountRaised, locale)}</p>
                   <p className="mt-1 text-sm text-muted-foreground">
-                    Target: {campaign.targetAmount > 0 ? formatINR(campaign.targetAmount) : "To be updated"}
+                    {t("campaign.statusTarget", {
+                      value: campaign.targetAmount > 0 ? formatINR(campaign.targetAmount, locale) : fallback,
+                    })}
                   </p>
                   <ProgressBar className="mt-3" raised={campaign.amountRaised} target={campaign.targetAmount} />
                 </>
               ) : (
-                <p className="text-sm text-muted-foreground">Fundraising figures: Updates coming soon</p>
+                <p className="text-sm text-muted-foreground">{t("campaign.figuresSoon")}</p>
               )}
             </div>
           </section>
           <section>
-            <h2 className="font-display text-2xl text-navy">Impact</h2>
-            <p className="mt-4 text-sm leading-relaxed text-muted-foreground">
-              Beneficiary counts and field outcomes are published only after they are verified.
-              Until then, treat operational statistics as still to be updated.
-            </p>
+            <h2 className="font-display text-2xl text-navy">{t("campaign.impact")}</h2>
+            <p className="mt-4 text-sm leading-relaxed text-muted-foreground">{t("campaign.impactNote")}</p>
             <div className="mt-4 grid gap-3 sm:grid-cols-2">
-              <StatTile label="Families reached" value="Updates coming soon" />
+              <StatTile label={t("campaign.families")} value={t("common.updatesComing")} />
               <StatTile
-                label="Verified donations"
-                value={campaign.donorCount > 0 ? String(campaign.donorCount) : "Updates coming soon"}
+                label={t("campaign.verifiedDonations")}
+                value={campaign.donorCount > 0 ? String(campaign.donorCount) : t("common.updatesComing")}
               />
             </div>
           </section>
           <section>
-            <h2 className="font-display text-2xl text-navy">Updates</h2>
+            <h2 className="font-display text-2xl text-navy">{t("campaign.updates")}</h2>
             <div className="mt-4 space-y-4">
               {updates.length === 0 ? (
-                <p className="rounded-2xl bg-cream p-5 text-sm text-muted-foreground">
-                  Timeline: Updates coming soon. Situation reports will appear here when they are
-                  verified.
-                </p>
+                <p className="rounded-2xl bg-cream p-5 text-sm text-muted-foreground">{t("campaign.updatesEmpty")}</p>
               ) : (
                 updates.map((update) => <UpdateCard key={update.id} update={update} />)
               )}
@@ -160,7 +165,7 @@ function CampaignPage() {
           </section>
           {gallery.length > 0 ? (
             <section>
-              <h2 className="font-display text-2xl text-navy">Gallery</h2>
+              <h2 className="font-display text-2xl text-navy">{t("campaign.gallery")}</h2>
               <div className="mt-4 grid gap-3 sm:grid-cols-2">
                 {gallery.map((item) => (
                   <img
@@ -175,13 +180,13 @@ function CampaignPage() {
             </section>
           ) : null}
           <section>
-            <h2 className="font-display text-2xl text-navy">Transparency</h2>
-            <BulletList className="mt-4 text-sm" text={campaign.utilisationNotes} />
+            <h2 className="font-display text-2xl text-navy">{t("campaign.transparency")}</h2>
+            <BulletList className="mt-4 text-sm" text={tValue({ en: campaign.utilisationNotes, hi: null })} />
             <p className="mt-4 text-sm text-muted-foreground">
-              Organisation notes: {settings.registrationNotes || "To be updated"}
+              {t("campaign.orgNotes")}: {tValue({ en: settings.registrationNotes, hi: null }) || fallback}
             </p>
             <Button asChild variant="outline" className="mt-4">
-              <Link to="/transparency">View organisation transparency</Link>
+              <Link to="/transparency">{t("campaign.viewOrgTransparency")}</Link>
             </Button>
           </section>
         </div>
@@ -191,51 +196,48 @@ function CampaignPage() {
             {hasFigures ? (
               <>
                 <StatTile
-                  label="Amount raised"
-                  value={formatINR(campaign.amountRaised)}
+                  label={t("campaign.amountRaised")}
+                  value={formatINR(campaign.amountRaised, locale)}
                   hint={
                     campaign.donorCount > 0
-                      ? `${campaign.donorCount} verified donation${campaign.donorCount === 1 ? "" : "s"}`
-                      : "Donor count: Updates coming soon"
+                      ? `${campaign.donorCount} ${campaign.donorCount === 1 ? t("common.verifiedDonation") : t("common.verifiedDonations")}`
+                      : t("campaign.donorCountSoon")
                   }
                   className="p-0 shadow-none"
                 />
                 <p className="mt-4 text-sm text-muted-foreground">
-                  Target: {campaign.targetAmount > 0 ? formatINR(campaign.targetAmount) : "To be updated"}
+                  {t("campaign.statusTarget", {
+                    value: campaign.targetAmount > 0 ? formatINR(campaign.targetAmount, locale) : fallback,
+                  })}
                 </p>
                 <ProgressBar className="mt-3" raised={campaign.amountRaised} target={campaign.targetAmount} />
               </>
             ) : (
-              <p className="text-sm text-muted-foreground">Fundraising figures: Updates coming soon</p>
+              <p className="text-sm text-muted-foreground">{t("campaign.figuresSoon")}</p>
             )}
             <Button asChild className="mt-5 w-full min-h-12">
               <Link to="/donate" search={{ campaign: campaign.slug }}>
-                Donate Now
+                {t("nav.donate")}
               </Link>
             </Button>
-            <ShareButtons className="mt-5" title={campaign.title} path={`/campaign/${campaign.slug}`} />
+            <ShareButtons className="mt-5" title={title} path={`/campaign/${campaign.slug}`} />
           </div>
           <div className="rounded-2xl bg-cream p-6">
-            <h2 className="font-display text-xl text-navy">Volunteer</h2>
-            <p className="mt-2 text-sm text-muted-foreground">
-              If you can offer time or skills, register your interest. Placement is never automatic.
-            </p>
+            <h2 className="font-display text-xl text-navy">{t("campaign.volunteer")}</h2>
+            <p className="mt-2 text-sm text-muted-foreground">{t("campaign.volunteerNote")}</p>
             <Button asChild variant="navy" className="mt-4 w-full">
-              <Link to="/volunteer">Become a Volunteer</Link>
+              <Link to="/volunteer">{t("campaign.becomeVolunteer")}</Link>
             </Button>
           </div>
         </aside>
       </div>
 
       <section className="bg-navy px-4 py-16 text-center sm:px-6">
-        <h2 className="font-display text-3xl text-cream">Donate to {campaign.title}</h2>
-        <p className="mx-auto mt-3 max-w-xl text-sm text-cream/75">
-          Payments are marked successful only after gateway verification. Card and UPI details stay
-          with the payment provider.
-        </p>
+        <h2 className="font-display text-3xl text-cream">{t("campaign.donateHeading", { title })}</h2>
+        <p className="mx-auto mt-3 max-w-xl text-sm text-cream/75">{t("campaign.donateLead")}</p>
         <Button asChild size="lg" className="mt-6">
           <Link to="/donate" search={{ campaign: campaign.slug }}>
-            Donate Now
+            {t("nav.donate")}
           </Link>
         </Button>
       </section>
@@ -243,7 +245,7 @@ function CampaignPage() {
       {others.length > 0 ? (
         <section className="bg-cream px-4 py-16 sm:px-6">
           <div className="mx-auto max-w-6xl">
-            <h2 className="font-display text-3xl text-navy">Other campaigns</h2>
+            <h2 className="font-display text-3xl text-navy">{t("campaign.other")}</h2>
             <div className="mt-8 grid gap-6 md:grid-cols-2">
               {others.map((item) => (
                 <CampaignCard key={item.id} campaign={item} />
@@ -256,7 +258,7 @@ function CampaignPage() {
       <div className="fixed inset-x-0 bottom-0 z-30 border-t border-border bg-paper/95 p-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] backdrop-blur lg:hidden">
         <Button asChild className="w-full min-h-12">
           <Link to="/donate" search={{ campaign: campaign.slug }}>
-            Donate to {campaign.title}
+            {t("campaign.donateTo", { title })}
           </Link>
         </Button>
       </div>

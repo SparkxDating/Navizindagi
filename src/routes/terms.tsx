@@ -1,5 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { LegalPage } from "@/components/legal-page";
+import { useLanguage, usePageSeo } from "@/lib/i18n";
 
 export const Route = createFileRoute("/terms")({
   component: TermsPage,
@@ -7,26 +8,14 @@ export const Route = createFileRoute("/terms")({
 });
 
 function TermsPage() {
+  const { t } = useLanguage();
+  usePageSeo(t("seo.termsTitle"));
   return (
-    <LegalPage title="Terms of Use" updated="1 September 2026">
-      <p>
-        This website is operated by Navi Zindagi Foundation to share information, receive donations
-        and register volunteers for flood-relief support. Content is provided in good faith and is
-        updated as information is confirmed.
-      </p>
-      <p>
-        You agree not to submit false details, attempt to interfere with payment processing, or use
-        automated tools to overload the forms. Donations are voluntary gifts, not purchases of goods
-        or services.
-      </p>
-      <p>
-        Campaign pages describe intended use of funds. They do not constitute a claim that the
-        Foundation is physically present in every named location unless an official update says so.
-      </p>
-      <p>
-        The Foundation may refuse or return a donation where required by law or where payment
-        verification fails. Admin access is restricted to authorised accounts.
-      </p>
+    <LegalPage title={t("legal.termsTitle")} updated={t("legal.updatedDate")}>
+      <p>{t("legal.terms1")}</p>
+      <p>{t("legal.terms2")}</p>
+      <p>{t("legal.terms3")}</p>
+      <p>{t("legal.terms4")}</p>
     </LegalPage>
   );
 }

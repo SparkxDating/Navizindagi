@@ -2,6 +2,7 @@ import { Link } from "@tanstack/react-router";
 import { MapPin } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ProgressBar } from "@/components/ui/progress";
+import { dateLocale, displayCampaignTitle, useLanguage } from "@/lib/i18n";
 import type { Campaign } from "@/lib/types";
 import { cn, formatINR } from "@/lib/utils";
 
@@ -12,7 +13,11 @@ export function CampaignCard({
   campaign: Campaign;
   className?: string;
 }) {
+  const { t, language, tValue } = useLanguage();
+  const title = displayCampaignTitle(language, campaign.slug, campaign.title);
+  const description = tValue({ en: campaign.shortDescription, hi: null });
   const hasFigures = campaign.targetAmount > 0 || campaign.amountRaised > 0;
+  const locale = dateLocale(language);
   return (
     <article
       className={cn(
@@ -24,7 +29,7 @@ export function CampaignCard({
         {campaign.heroImageUrl ? (
           <img
             src={campaign.heroImageUrl}
-            alt={`${campaign.title} in ${campaign.locationLabel}`}
+            alt={`${title} · ${campaign.locationLabel}`}
             className="size-full object-cover transition-transform duration-500 ease-out motion-safe:hover:scale-[1.03]"
             loading="lazy"
           />
@@ -38,26 +43,26 @@ export function CampaignCard({
       </div>
       <div className="flex flex-1 flex-col gap-4 p-6">
         <div className="space-y-2">
-          <h3 className="font-display text-2xl text-navy">{campaign.title}</h3>
-          <p className="text-sm leading-relaxed text-muted-foreground">{campaign.shortDescription}</p>
+          <h3 className="font-display text-2xl text-navy">{title}</h3>
+          <p className="text-sm leading-relaxed text-muted-foreground">{description}</p>
         </div>
         <div className="mt-auto space-y-3">
           <div className="flex items-end justify-between gap-3 text-sm">
             {campaign.amountRaised > 0 ? (
               <p>
-                <span className="block text-xs uppercase tracking-wide text-muted-foreground">Raised</span>
-                <span className="font-semibold tabular-nums text-navy">{formatINR(campaign.amountRaised)}</span>
+                <span className="block text-xs uppercase tracking-wide text-muted-foreground">{t("common.raised")}</span>
+                <span className="font-semibold tabular-nums text-navy">{formatINR(campaign.amountRaised, locale)}</span>
               </p>
             ) : (
               <p>
-                <span className="block text-xs uppercase tracking-wide text-muted-foreground">Raised</span>
-                <span className="text-sm text-muted-foreground">To be updated</span>
+                <span className="block text-xs uppercase tracking-wide text-muted-foreground">{t("common.raised")}</span>
+                <span className="text-sm text-muted-foreground">{t("common.toBeUpdated")}</span>
               </p>
             )}
             <p className="text-right">
-              <span className="block text-xs uppercase tracking-wide text-muted-foreground">Target</span>
+              <span className="block text-xs uppercase tracking-wide text-muted-foreground">{t("common.target")}</span>
               <span className="font-semibold tabular-nums text-navy">
-                {campaign.targetAmount > 0 ? formatINR(campaign.targetAmount) : "To be updated"}
+                {campaign.targetAmount > 0 ? formatINR(campaign.targetAmount, locale) : t("common.toBeUpdated")}
               </span>
             </p>
           </div>
@@ -66,7 +71,8 @@ export function CampaignCard({
               <ProgressBar raised={campaign.amountRaised} target={campaign.targetAmount} />
               {campaign.donorCount > 0 ? (
                 <p className="text-xs text-muted-foreground">
-                  {campaign.donorCount} verified donation{campaign.donorCount === 1 ? "" : "s"}
+                  {campaign.donorCount}{" "}
+                  {campaign.donorCount === 1 ? t("common.verifiedDonation") : t("common.verifiedDonations")}
                 </p>
               ) : null}
             </>
@@ -74,12 +80,12 @@ export function CampaignCard({
           <div className="flex flex-col gap-2 sm:flex-row">
             <Button asChild className="min-h-12 flex-1">
               <Link to="/donate" search={{ campaign: campaign.slug }}>
-                Donate
+                {t("common.donate")}
               </Link>
             </Button>
             <Button asChild variant="outline" className="min-h-12 flex-1">
               <Link to="/campaign/$slug" params={{ slug: campaign.slug }}>
-                View campaign
+                {t("common.viewCampaign")}
               </Link>
             </Button>
           </div>

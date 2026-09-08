@@ -15,6 +15,7 @@ import { Section } from "@/components/section";
 import { TrustBar } from "@/components/trust-bar";
 import { UpdateCard } from "@/components/update-card";
 import { Button } from "@/components/ui/button";
+import { useLanguage, usePageSeo, type MessageKey } from "@/lib/i18n";
 import {
   ACTIVITY_PREVIEWS,
   APP_DESCRIPTION,
@@ -54,6 +55,8 @@ const WORK_ICONS: Record<string, ReactNode> = {
 
 function HomePage() {
   const { settings, campaigns, updates } = Route.useLoaderData();
+  const { t, tValue } = useLanguage();
+  usePageSeo(t("seo.homeTitle"), t("seo.homeDescription"));
   const nepal = campaigns.find((campaign) => campaign.slug === "nepal-flood-relief");
   const assam = campaigns.find((campaign) => campaign.slug === "assam-flood-relief");
   const liveCampaigns = [nepal, assam].filter((campaign): campaign is NonNullable<typeof campaign> => Boolean(campaign));
@@ -76,27 +79,24 @@ function HomePage() {
             <p className="text-xs font-semibold uppercase tracking-[0.2em] text-teal-soft">
               {displayTagline(settings.tagline)}
             </p>
-            <h1 className="mt-4 font-display text-cream">
-              सेवा, सहयोग और संवेदना के साथ एक बेहतर ज़िंदगी की ओर
-            </h1>
+            <h1 className="mt-4 font-display text-cream">{t("home.heroTitle")}</h1>
             <p className="mt-5 max-w-2xl text-base leading-relaxed text-cream/90 sm:text-lg">
-              Navi Zindagi Foundation जरूरतमंद लोगों, बच्चों, समुदायों और गौवंश के लिए राहत, शिक्षा,
-              भोजन और सामाजिक कल्याण से जुड़े कार्यों को आगे बढ़ाने के लिए प्रतिबद्ध है।
+              {t("home.heroDescription")}
             </p>
             <div className="mt-8 flex flex-col gap-3 sm:flex-row">
               <Button asChild size="lg" className="min-h-12">
                 <Link to="/donate" search={{ campaign: undefined }}>
-                  Donate Now
+                  {t("home.donate")}
                 </Link>
               </Button>
               <Button asChild size="lg" variant="cream" className="min-h-12">
-                <Link to="/volunteer">Volunteer With Us</Link>
+                <Link to="/volunteer">{t("home.volunteer")}</Link>
               </Button>
             </div>
             <p className="mt-5 text-sm text-cream/75">
               {settings.registrationCin
-                ? `CIN ${settings.registrationCin}. Donations are marked successful only after payment verification.`
-                : "Donations are marked successful only after payment verification."}
+                ? t("home.cinNote", { cin: settings.registrationCin })
+                : t("home.paymentNote")}
             </p>
           </div>
         </div>
@@ -106,16 +106,16 @@ function HomePage() {
 
       <Section
         id="about-foundation"
-        eyebrow="Who we are"
-        title="नवी ज़िंदगी फाउंडेशन के बारे में"
-        lead="Navi Zindagi Foundation community participation और सामाजिक पहलों के माध्यम से मानवीय सहयोग, शिक्षा, भोजन सहायता, पशु कल्याण और आपदा राहत पर केंद्रित कार्य करती है।"
+        eyebrow={t("home.whoEyebrow")}
+        title={t("home.whoTitle")}
+        lead={t("home.whoLead")}
       >
         <div className="mx-auto max-w-3xl rounded-2xl bg-card p-6 text-center shadow-card sm:p-8">
           <p className="text-base leading-relaxed text-muted-foreground">
-            {settings.aboutText}
+            {tValue({ en: settings.aboutText, hi: null })}
           </p>
           <Button asChild className="mt-6">
-            <Link to="/about">Know More About Us</Link>
+            <Link to="/about">{t("home.knowMore")}</Link>
           </Button>
         </div>
       </Section>
@@ -123,20 +123,20 @@ function HomePage() {
       <Section
         id="our-work"
         tone="cream"
-        eyebrow="Our work"
-        title="हम किन क्षेत्रों में काम करते हैं"
-        lead="ये सेवा क्षेत्र संगठन की दिशा दिखाते हैं। आंकड़े और फ़ील्ड रिपोर्ट तभी प्रकाशित होते हैं जब वे सत्यापित हों।"
+        eyebrow={t("home.workEyebrow")}
+        title={t("home.workTitle")}
+        lead={t("home.workLead")}
       >
         <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
           {WORK_AREAS.map((area) => (
             <ImpactCard
               key={area.key}
-              title={area.title}
-              body={area.body}
+              title={t(`home.work.${area.key}.title` as MessageKey)}
+              body={t(`home.work.${area.key}.body` as MessageKey)}
               image={"image" in area ? area.image : undefined}
               icon={WORK_ICONS[area.key]}
               href="/about"
-              hrefLabel="Learn More"
+              hrefLabel={t("common.learnMore")}
             />
           ))}
         </div>
@@ -144,9 +144,9 @@ function HomePage() {
 
       <Section
         id="campaigns"
-        eyebrow="Campaigns"
-        title="हमारे अभियान"
-        lead="Live donation campaigns below use published fundraising data only. Other service themes are shown as activities, not as unverified donation drives."
+        eyebrow={t("home.campaignsEyebrow")}
+        title={t("home.campaignsTitle")}
+        lead={t("home.campaignsLead")}
       >
         {liveCampaigns.length > 0 ? (
           <div className="grid gap-6 md:grid-cols-2">
@@ -155,12 +155,11 @@ function HomePage() {
             ))}
           </div>
         ) : (
-          <p className="text-center text-muted-foreground">Campaign pages: Updates coming soon.</p>
+          <p className="text-center text-muted-foreground">{t("home.campaignsEmpty")}</p>
         )}
-        <h3 className="mt-12 text-center font-display text-2xl text-navy">Our Activities</h3>
+        <h3 className="mt-12 text-center font-display text-2xl text-navy">{t("home.activitiesTitle")}</h3>
         <p className="mx-auto mt-2 max-w-2xl text-center text-sm text-muted-foreground">
-          These activities describe areas of work. They are not live fundraising campaigns until a
-          campaign page is published.
+          {t("home.activitiesLead")}
         </p>
         <div className="mt-6 grid gap-5 sm:grid-cols-3">
           {WORK_AREAS.filter((area) => ["gau-seva", "education", "food"].includes(area.key)).map((area) => (
@@ -169,17 +168,19 @@ function HomePage() {
               className="flex h-full flex-col rounded-2xl bg-card p-6 shadow-card transition-shadow duration-200 motion-safe:hover:shadow-card-hover"
             >
               <div className="text-teal">{WORK_ICONS[area.key]}</div>
-              <h3 className="mt-3 font-display text-xl text-navy">{area.title}</h3>
-              <p className="mt-2 flex-1 text-sm leading-relaxed text-muted-foreground">{area.body}</p>
+              <h3 className="mt-3 font-display text-xl text-navy">{t(`home.work.${area.key}.title` as MessageKey)}</h3>
+              <p className="mt-2 flex-1 text-sm leading-relaxed text-muted-foreground">
+                {t(`home.work.${area.key}.body` as MessageKey)}
+              </p>
               <Button asChild variant="outline" className="mt-5">
-                <Link to="/about">Learn More</Link>
+                <Link to="/about">{t("common.learnMore")}</Link>
               </Button>
             </article>
           ))}
         </div>
         <div className="mt-8 text-center">
           <Button asChild variant="outline">
-            <Link to="/campaigns">View Campaigns</Link>
+            <Link to="/campaigns">{t("home.viewCampaigns")}</Link>
           </Button>
         </div>
       </Section>
@@ -187,15 +188,17 @@ function HomePage() {
       <Section
         id="how-support-helps"
         tone="cream"
-        eyebrow="Support"
-        title="आपका सहयोग कैसे मदद करता है"
+        eyebrow={t("home.supportEyebrow")}
+        title={t("home.supportTitle")}
       >
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           {SUPPORT_STEPS.map((item) => (
             <article key={item.step} className="rounded-2xl bg-card p-6 shadow-card">
               <p className="font-display text-3xl text-teal">{item.step}</p>
-              <h3 className="mt-3 font-display text-xl text-navy">{item.title}</h3>
-              <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{item.body}</p>
+              <h3 className="mt-3 font-display text-xl text-navy">{t(`home.steps.${item.key}.title` as MessageKey)}</h3>
+              <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
+                {t(`home.steps.${item.key}.body` as MessageKey)}
+              </p>
             </article>
           ))}
         </div>
@@ -203,13 +206,9 @@ function HomePage() {
 
       <Section
         id="impact-glimpse"
-        eyebrow="Impact"
-        title="हमारे कार्यों की झलक"
-        lead={
-          verifiedImpact
-            ? "Published campaign figures appear only where the Foundation has recorded them."
-            : "हमारे सेवा कार्यों की जानकारी और अपडेट्स जल्द यहां साझा किए जाएंगे।"
-        }
+        eyebrow={t("home.impactEyebrow")}
+        title={t("home.impactTitle")}
+        lead={verifiedImpact ? t("home.impactLeadRecorded") : t("home.impactLeadSoon")}
       >
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
           {ACTIVITY_PREVIEWS.map((item) => (
@@ -218,10 +217,10 @@ function HomePage() {
                 <img src={item.image} alt="" className="aspect-[4/3] w-full object-cover" loading="lazy" />
               ) : (
                 <div className="grid aspect-[4/3] place-items-center bg-teal-soft text-sm font-semibold text-teal-dark">
-                  {item.title}
+                  {t(`home.preview.${item.key}` as MessageKey)}
                 </div>
               )}
-              <h3 className="p-4 font-display text-lg text-navy">{item.title}</h3>
+              <h3 className="p-4 font-display text-lg text-navy">{t(`home.preview.${item.key}` as MessageKey)}</h3>
             </article>
           ))}
         </div>
@@ -237,67 +236,62 @@ function HomePage() {
       <Section
         id="why-join"
         tone="cream"
-        eyebrow="Trust"
-        title="हमारे साथ क्यों जुड़ें?"
+        eyebrow={t("home.trustEyebrow")}
+        title={t("home.whyTitle")}
       >
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           {WHY_JOIN_POINTS.map((point) => (
-            <article key={point} className="rounded-2xl bg-card p-6 shadow-card">
+            <article key={point.key} className="rounded-2xl bg-card p-6 shadow-card">
               <ShieldCheck className="size-5 text-teal" aria-hidden />
-              <h3 className="mt-3 font-display text-lg text-navy">{point}</h3>
+              <h3 className="mt-3 font-display text-lg text-navy">{t(`home.why.${point.key}` as MessageKey)}</h3>
             </article>
           ))}
         </div>
         <div className="mt-8 text-center">
           <Button asChild variant="outline">
-            <Link to="/transparency">View Transparency</Link>
+            <Link to="/transparency">{t("home.viewTransparency")}</Link>
           </Button>
         </div>
       </Section>
 
-      <Section id="activity-gallery" title="हमारी गतिविधियों की झलक">
+      <Section id="activity-gallery" title={t("home.galleryTitle")}>
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           <img src="/campaign-assam.jpg" alt="" className="aspect-[16/10] w-full rounded-2xl object-cover shadow-card" loading="lazy" />
           <img src="/relief-water.jpg" alt="" className="aspect-[16/10] w-full rounded-2xl object-cover shadow-card" loading="lazy" />
           <img src="/relief-shelter.jpg" alt="" className="aspect-[16/10] w-full rounded-2xl object-cover shadow-card" loading="lazy" />
         </div>
-        <p className="mt-4 text-center text-xs text-muted-foreground">
-          Category visuals from existing site assets. They are not presented as photographs of a
-          specific field event.
-        </p>
+        <p className="mt-4 text-center text-xs text-muted-foreground">{t("home.galleryNote")}</p>
       </Section>
 
       <Section id="volunteer-cta" tone="navy">
         <div className="mx-auto max-w-3xl text-center">
-          <h2 className="font-display text-3xl text-cream sm:text-4xl">आप भी सेवा से जुड़ सकते हैं</h2>
-          <p className="mt-4 text-base leading-relaxed text-cream/80">
-            अपने समय, कौशल या सहयोग के माध्यम से Navi Zindagi Foundation की गतिविधियों से जुड़ें।
-          </p>
+          <h2 className="font-display text-3xl text-cream sm:text-4xl">{t("home.volunteerTitle")}</h2>
+          <p className="mt-4 text-base leading-relaxed text-cream/80">{t("home.volunteerLead")}</p>
           <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
             <Button asChild size="lg" variant="cream">
               <Link to="/volunteer">
                 <Users className="size-4" />
-                Become a Volunteer
+                {t("home.becomeVolunteer")}
               </Link>
             </Button>
             <Button asChild size="lg" variant="outline" className="border-cream/30 bg-transparent text-cream hover:bg-navy-mid">
-              <Link to="/contact">Contact Us</Link>
+              <Link to="/contact">{t("home.contactUs")}</Link>
             </Button>
           </div>
         </div>
       </Section>
 
       <CtaBand
-        title="आपका छोटा सा सहयोग किसी की ज़िंदगी में बड़ा बदलाव ला सकता है।"
+        title={t("home.finalTitle")}
         actions={
           <>
             <Button asChild size="lg">
               <Link to="/donate" search={{ campaign: undefined }}>
-                Donate Now
+                {t("home.donate")}
               </Link>
             </Button>
             <Button asChild size="lg" variant="cream">
-              <Link to="/campaigns">View Campaigns</Link>
+              <Link to="/campaigns">{t("home.viewCampaigns")}</Link>
             </Button>
           </>
         }

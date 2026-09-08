@@ -1,18 +1,20 @@
 import { Building2, MapPin, ShieldCheck } from "lucide-react";
+import { useLanguage } from "@/lib/i18n";
 import type { SiteSettings } from "@/lib/types";
 
 export function TrustBar({ settings }: { settings: SiteSettings }) {
+  const { t } = useLanguage();
   const items = [
     {
       icon: Building2,
-      label: "Organisation",
+      label: t("common.organisation"),
       value: settings.orgName,
     },
     ...(settings.registrationCin
       ? [
           {
             icon: ShieldCheck,
-            label: "CIN",
+            label: t("common.cin"),
             value: settings.registrationCin,
           },
         ]
@@ -21,7 +23,7 @@ export function TrustBar({ settings }: { settings: SiteSettings }) {
       ? [
           {
             icon: MapPin,
-            label: "Office",
+            label: t("common.office"),
             value: settings.address,
           },
         ]

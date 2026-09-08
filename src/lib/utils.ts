@@ -5,19 +5,19 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
-export function formatINR(amount: number) {
-  return new Intl.NumberFormat("en-IN", {
+export function formatINR(amount: number, locale = "en-IN") {
+  return new Intl.NumberFormat(locale, {
     style: "currency",
     currency: "INR",
     maximumFractionDigits: 0,
   }).format(Number.isFinite(amount) ? amount : 0);
 }
 
-export function formatDate(value: string | Date | null | undefined) {
+export function formatDate(value: string | Date | null | undefined, locale = "en-IN") {
   if (!value) return "To be updated";
   const date = typeof value === "string" ? new Date(value) : value;
   if (Number.isNaN(date.getTime())) return "To be updated";
-  return new Intl.DateTimeFormat("en-IN", {
+  return new Intl.DateTimeFormat(locale, {
     day: "numeric",
     month: "short",
     year: "numeric",

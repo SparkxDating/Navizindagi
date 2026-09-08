@@ -1,8 +1,9 @@
 import { Link, createFileRoute } from "@tanstack/react-router";
 import { Download, Printer, Share2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { dateLocale, displayCampaignTitle, useLanguage, usePageSeo } from "@/lib/i18n";
 import { getDonationReceipt } from "@/lib/server/site";
-import { SITE_URL } from "@/lib/site";
+import { APP_NAME, SITE_URL } from "@/lib/site";
 import { downloadTextFile, formatDate, formatINR } from "@/lib/utils";
 
 export const Route = createFileRoute("/donate_/thank-you")({
@@ -21,27 +22,27 @@ export const Route = createFileRoute("/donate_/thank-you")({
   }),
 });
 
-function statusLabel(status: string) {
-  if (status === "completed") return "Verified payment";
-  if (status === "sandbox") return "Sandbox acknowledgement (not a live payment)";
-  if (status === "failed") return "Payment not confirmed";
-  return status;
-}
-
 function ThankYouPage() {
   const { donation, settings } = Route.useLoaderData();
+  const { t, language } = useLanguage();
+  const locale = dateLocale(language);
+  usePageSeo(t("seo.thankYouTitle"));
+
+  function statusLabel(status: string) {
+    if (status === "completed") return t("thankYou.verified");
+    if (status === "sandbox") return t("thankYou.sandboxStatus");
+    if (status === "failed") return t("thankYou.failed");
+    return status;
+  }
 
   if (!donation) {
     return (
       <div className="mx-auto max-w-lg px-4 py-20 text-center">
-        <h1 className="font-display text-3xl text-navy">Receipt not found</h1>
-        <p className="mt-3 text-sm text-muted-foreground">
-          We could not find a donation for that reference. If you just paid, wait a moment and
-          return from the checkout screen.
-        </p>
+        <h1 className="font-display text-3xl text-navy">{t("thankYou.notFound")}</h1>
+        <p className="mt-3 text-sm text-muted-foreground">{t("thankYou.notFoundBody")}</p>
         <Button asChild className="mt-6">
           <Link to="/donate" search={{ campaign: undefined }}>
-            Back to donate
+            {t("thankYou.backDonate")}
           </Link>
         </Button>
       </div>
@@ -49,29 +50,30 @@ function ThankYouPage() {
   }
 
   const success = donation.status === "completed" || donation.status === "sandbox";
+  const campaignTitle = displayCampaignTitle(language, donation.campaignSlug, donation.campaignTitle);
 
   function receiptText() {
     if (!donation) return "";
     return [
-      settings?.orgName ?? "Navi Zindagi Foundation",
-      "Payment acknowledgement — not a tax-exemption certificate",
+      settings?.orgName ?? APP_NAME,
+      t("thankYou.fileNote"),
       "",
-      `Reference: ${donation.referenceId}`,
-      `Campaign: ${donation.campaignTitle}`,
-      `Amount: ${formatINR(donation.amount)}`,
-      `Status: ${statusLabel(donation.status)}`,
-      `Date: ${formatDate(donation.createdAt)}`,
+      `${t("thankYou.reference")}: ${donation.referenceId}`,
+      `${t("thankYou.campaign")}: ${campaignTitle}`,
+      `${t("thankYou.amount")}: ${formatINR(donation.amount, locale)}`,
+      `${t("thankYou.status")}: ${statusLabel(donation.status)}`,
+      `${t("thankYou.date")}: ${formatDate(donation.createdAt, locale)}`,
       "",
-      "This is a payment acknowledgement. It is not an 80G or tax-exemption certificate unless the Foundation has separately issued one.",
+      t("thankYou.fileDisclaimer"),
     ].join("\n");
   }
 
   async function shareSupport() {
-    const text = "I'm supporting flood relief with Navi Zindagi Foundation.";
+    const text = t("thankYou.shareText");
     const url = `${SITE_URL}/donate`;
     if (navigator.share) {
       try {
-        await navigator.share({ title: "Navi Zindagi Foundation", text, url });
+        await navigator.share({ title: settings?.orgName ?? APP_NAME, text, url });
         return;
       } catch {
         /* fall through */
@@ -91,43 +93,36 @@ function ThankYouPage() {
           </div>
         </div>
         <h1 className="mt-8 font-display text-3xl text-navy sm:text-4xl">
-          {success ? "Thank You for Supporting Flood Relief" : "Payment not confirmed"}
+          {success ? t("thankYou.success") : t("thankYou.notConfirmed")}
         </h1>
         <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
           {success
             ? donation.status === "sandbox"
-              ? "This is a sandbox acknowledgement. No live payment was collected. It must not be treated as funds received."
-              : "Your payment was verified with the gateway. Please save this acknowledgement."
-            : `Current status: ${donation.status}. A donation is only treated as successful after gateway verification.`}
+              ? t("thankYou.sandboxAck")
+              : t("thankYou.verifiedAck")
+            : t("thankYou.currentStatus", { status: donation.status })}
         </p>
 
         <dl className="mt-8 grid gap-4 rounded-xl bg-cream p-5 text-sm">
-          <Row label="Donation reference" value={donation.referenceId} />
-          <Row label="Campaign" value={donation.campaignTitle} />
-          <Row label="Amount" value={formatINR(donation.amount)} />
-          <Row label="Payment status" value={statusLabel(donation.status)} />
-          <Row label="Date" value={formatDate(donation.createdAt)} />
+          <Row label={t("thankYou.reference")} value={donation.referenceId} />
+          <Row label={t("thankYou.campaign")} value={campaignTitle} />
+          <Row label={t("thankYou.amount")} value={formatINR(donation.amount, locale)} />
+          <Row label={t("thankYou.status")} value={statusLabel(donation.status)} />
+          <Row label={t("thankYou.date")} value={formatDate(donation.createdAt, locale)} />
         </dl>
 
         <div className="mt-6 rounded-xl border border-border p-4 text-sm text-muted-foreground">
-          <p className="font-medium text-navy">This is a payment acknowledgement</p>
-          <p className="mt-2">
-            It confirms the payment status recorded by this website. It is not a tax-exemption
-            certificate (including 80G) and should not be used as one unless the Foundation has
-            published verified tax documents separately.
-          </p>
+          <p className="font-medium text-navy">{t("thankYou.ackTitle")}</p>
+          <p className="mt-2">{t("thankYou.ackBody")}</p>
         </div>
 
-        <p className="mt-4 text-xs text-muted-foreground">
-          TODO: connect a transactional email provider on the server to dispatch receipts
-          automatically. Until then, please download or print this page.
-        </p>
+        <p className="mt-4 text-xs text-muted-foreground">{t("thankYou.emailTodo")}</p>
       </div>
 
       <div className="mt-6 flex flex-col gap-3 no-print sm:flex-row sm:flex-wrap">
         <Button type="button" onClick={() => window.print()}>
           <Printer className="size-4" />
-          Print receipt
+          {t("thankYou.print")}
         </Button>
         <Button
           type="button"
@@ -135,14 +130,14 @@ function ThankYouPage() {
           onClick={() => downloadTextFile(`nzf-acknowledgement-${donation.referenceId}.txt`, receiptText())}
         >
           <Download className="size-4" />
-          Download acknowledgement
+          {t("thankYou.download")}
         </Button>
         <Button type="button" variant="outline" onClick={() => void shareSupport()}>
           <Share2 className="size-4" />
-          Share this cause
+          {t("thankYou.share")}
         </Button>
         <Button asChild variant="navy">
-          <Link to="/">Back to homepage</Link>
+          <Link to="/">{t("thankYou.backHome")}</Link>
         </Button>
       </div>
     </div>

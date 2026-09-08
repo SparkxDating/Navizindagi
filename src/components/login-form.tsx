@@ -4,10 +4,12 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Field } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
+import { useLanguage } from "@/lib/i18n";
 import { authClient, GROK_PROVIDERS, signIn } from "@/lib/auth/client";
 
 export function LoginForm() {
   const navigate = useNavigate();
+  const { t } = useLanguage();
   const [mode, setMode] = useState<"signin" | "signup">("signin");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -25,18 +27,18 @@ export function LoginForm() {
           name,
           callbackURL: "/admin",
         });
-        if (error) throw new Error(error.message ?? "Could not create the account.");
+        if (error) throw new Error(error.message ?? t("login.createFail"));
       } else {
         const { error } = await authClient.signIn.email({
           email,
           password,
           callbackURL: "/admin",
         });
-        if (error) throw new Error(error.message ?? "Could not sign in.");
+        if (error) throw new Error(error.message ?? t("login.signInFail"));
       }
       await navigate({ to: "/admin" });
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : "Sign-in failed.");
+      toast.error(error instanceof Error ? error.message : t("login.failed"));
     } finally {
       setBusy(false);
     }
@@ -46,7 +48,7 @@ export function LoginForm() {
     <div className="space-y-6">
       <form onSubmit={(event) => void onSubmit(event)} className="space-y-4">
         {mode === "signup" ? (
-          <Field label="Name" htmlFor="admin-name" required>
+          <Field label={t("login.name")} htmlFor="admin-name" required>
             <Input
               id="admin-name"
               value={name}
@@ -56,7 +58,7 @@ export function LoginForm() {
             />
           </Field>
         ) : null}
-        <Field label="Email" htmlFor="admin-email" required>
+        <Field label={t("login.email")} htmlFor="admin-email" required>
           <Input
             id="admin-email"
             type="email"
@@ -66,7 +68,7 @@ export function LoginForm() {
             autoComplete="email"
           />
         </Field>
-        <Field label="Password" htmlFor="admin-password" required>
+        <Field label={t("login.password")} htmlFor="admin-password" required>
           <Input
             id="admin-password"
             type="password"
@@ -78,7 +80,7 @@ export function LoginForm() {
           />
         </Field>
         <Button type="submit" className="w-full" disabled={busy}>
-          {busy ? "Please wait…" : mode === "signup" ? "Create account" : "Sign in"}
+          {busy ? t("common.pleaseWait") : mode === "signup" ? t("login.create") : t("login.signIn")}
         </Button>
       </form>
 
@@ -87,7 +89,7 @@ export function LoginForm() {
         className="w-full text-center text-sm text-teal-dark underline-offset-4 hover:underline"
         onClick={() => setMode((current) => (current === "signin" ? "signup" : "signin"))}
       >
-        {mode === "signin" ? "Need an account? Create one" : "Already have an account? Sign in"}
+        {mode === "signin" ? t("login.needAccount") : t("login.haveAccount")}
       </button>
 
       <div className="relative">
@@ -95,7 +97,7 @@ export function LoginForm() {
           <div className="w-full border-t border-border" />
         </div>
         <p className="relative mx-auto w-fit bg-card px-3 text-xs uppercase tracking-wide text-muted-foreground">
-          Or continue with
+          {t("login.orContinue")}
         </p>
       </div>
 
@@ -114,18 +116,15 @@ export function LoginForm() {
                 errorCallbackURL: "/login",
               }).catch((error: unknown) => {
                 setBusy(false);
-                toast.error(error instanceof Error ? error.message : "Sign-in failed.");
+                toast.error(error instanceof Error ? error.message : t("login.failed"));
               });
             }}
           >
-            Continue with {provider.label}
+            {t("login.continueWith", { provider: provider.label })}
           </Button>
         ))}
       </div>
-      <p className="text-xs leading-relaxed text-muted-foreground">
-        Admin access is limited to authorised Foundation accounts. The first signed-in user on a
-        new installation is recorded as an administrator; later accounts need to be granted access.
-      </p>
+      <p className="text-xs leading-relaxed text-muted-foreground">{t("login.adminNote")}</p>
     </div>
   );
 }

@@ -2,6 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { HeartHandshake, Headphones, LifeBuoy, MapPin } from "lucide-react";
 import { VolunteerForm } from "@/components/volunteer-form";
 import { PageHero } from "@/components/section";
+import { useLanguage, usePageSeo, type MessageKey } from "@/lib/i18n";
 import { SITE_URL } from "@/lib/site";
 
 export const Route = createFileRoute("/volunteer")({
@@ -21,55 +22,39 @@ export const Route = createFileRoute("/volunteer")({
 });
 
 const ROLES = [
-  {
-    title: "Volunteer locally",
-    body: "Help with community coordination, collections and local outreach where you live.",
-    icon: MapPin,
-  },
-  {
-    title: "Emergency response",
-    body: "Offer on-call availability for logistics, first-aid support or rapid coordination.",
-    icon: LifeBuoy,
-  },
-  {
-    title: "Community support",
-    body: "Support families through translation, dignity kits, and day-to-day coordination.",
-    icon: HeartHandshake,
-  },
-  {
-    title: "Online support",
-    body: "Give a few hours a week remotely — fundraising, communications or administration.",
-    icon: Headphones,
-  },
+  { titleKey: "volunteer.local", bodyKey: "volunteer.localBody", icon: MapPin },
+  { titleKey: "volunteer.emergency", bodyKey: "volunteer.emergencyBody", icon: LifeBuoy },
+  { titleKey: "volunteer.community", bodyKey: "volunteer.communityBody", icon: HeartHandshake },
+  { titleKey: "volunteer.online", bodyKey: "volunteer.onlineBody", icon: Headphones },
 ] as const;
 
 function VolunteerPage() {
+  const { t } = useLanguage();
+  usePageSeo(t("seo.volunteerTitle"), t("seo.volunteerDescription"));
+
   return (
     <>
       <PageHero
-        eyebrow="Volunteer"
-        title="Offer your time with care"
-        lead="Tell us your skills, city and availability. A team member will follow up. Submitting this form is not a placement, a job offer, or a guarantee of field deployment."
+        eyebrow={t("volunteer.eyebrow")}
+        title={t("volunteer.title")}
+        lead={t("volunteer.lead")}
         image="/relief-shelter.jpg"
-        imageAlt="Community shelter support"
+        imageAlt={t("volunteer.title")}
       />
       <div className="mx-auto grid max-w-6xl gap-10 px-4 py-12 sm:px-6 lg:grid-cols-[0.9fr_1.1fr]">
         <aside className="space-y-4">
           <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-1">
             {ROLES.map((role) => (
-              <article key={role.title} className="rounded-2xl bg-card p-5 shadow-card">
+              <article key={role.titleKey} className="rounded-2xl bg-card p-5 shadow-card">
                 <p className="flex items-center gap-2 font-display text-lg text-navy">
                   <role.icon className="size-4 text-teal" aria-hidden />
-                  {role.title}
+                  {t(role.titleKey)}
                 </p>
-                <p className="mt-2 text-sm text-muted-foreground">{role.body}</p>
+                <p className="mt-2 text-sm text-muted-foreground">{t(role.bodyKey as MessageKey)}</p>
               </article>
             ))}
           </div>
-          <p className="text-sm text-muted-foreground">
-            We will not claim that volunteers are deployed to a named location until that is
-            documented in an official update.
-          </p>
+          <p className="text-sm text-muted-foreground">{t("volunteer.noClaim")}</p>
         </aside>
         <VolunteerForm />
       </div>

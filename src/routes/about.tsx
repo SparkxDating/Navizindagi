@@ -2,6 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { MapPin } from "lucide-react";
 import { BulletList, Prose } from "@/components/prose";
 import { PageHero, Section } from "@/components/section";
+import { useLanguage, usePageSeo } from "@/lib/i18n";
 import { getPublicSite } from "@/lib/server/site";
 import { SITE_URL } from "@/lib/site";
 
@@ -14,7 +15,7 @@ export const Route = createFileRoute("/about")({
       {
         name: "description",
         content:
-          "Learn about Navi Zindagi Foundation — mission, vision, values and flood-relief work. Unpublished details are labelled To be updated.",
+          "Learn about Navi Zindagi Foundation — mission, vision, values and community work. Unpublished details are labelled To be updated.",
       },
       { property: "og:title", content: "About · Navi Zindagi Foundation" },
       { property: "og:image", content: `${SITE_URL}/og.jpg` },
@@ -24,73 +25,67 @@ export const Route = createFileRoute("/about")({
 
 function AboutPage() {
   const { settings, team } = Route.useLoaderData();
+  const { t, tValue } = useLanguage();
+  usePageSeo(t("seo.aboutTitle"), t("seo.aboutDescription"));
+  const fallback = t("common.toBeUpdated");
 
   return (
     <>
       <PageHero
-        eyebrow="About"
+        eyebrow={t("about.eyebrow")}
         title={settings.orgName}
         lead={settings.tagline}
         image="/facebook-cover.jpg"
-        imageAlt="Navi Zindagi Foundation"
+        imageAlt={t("nav.logoAlt")}
       />
-      <Section title="Our story">
-        <Prose text={settings.aboutText} className="mx-auto max-w-3xl" />
+      <Section title={t("about.story")}>
+        <Prose text={tValue({ en: settings.aboutText, hi: null })} className="mx-auto max-w-3xl" />
       </Section>
-      <Section tone="cream" title="Mission, vision and values">
+      <Section tone="cream" title={t("about.mvv")}>
         <div className="grid gap-6 md:grid-cols-3">
           <article className="rounded-2xl bg-card p-6 shadow-card">
-            <h3 className="font-display text-xl text-navy">Mission</h3>
-            <Prose className="mt-3 text-sm" text={settings.mission || "To be updated"} />
+            <h3 className="font-display text-xl text-navy">{t("about.mission")}</h3>
+            <Prose className="mt-3 text-sm" text={tValue({ en: settings.mission, hi: null }) || fallback} />
           </article>
           <article className="rounded-2xl bg-card p-6 shadow-card">
-            <h3 className="font-display text-xl text-navy">Vision</h3>
-            <Prose className="mt-3 text-sm" text={settings.vision || "To be updated"} />
+            <h3 className="font-display text-xl text-navy">{t("about.vision")}</h3>
+            <Prose className="mt-3 text-sm" text={tValue({ en: settings.vision, hi: null }) || fallback} />
           </article>
           <article className="rounded-2xl bg-card p-6 shadow-card">
-            <h3 className="font-display text-xl text-navy">Values</h3>
-            <BulletList className="mt-3 text-sm" text={settings.valuesText || "To be updated"} />
+            <h3 className="font-display text-xl text-navy">{t("about.values")}</h3>
+            <BulletList className="mt-3 text-sm" text={tValue({ en: settings.valuesText, hi: null }) || fallback} />
           </article>
         </div>
       </Section>
-      <Section id="what-we-do" title="What we do">
+      <Section id="what-we-do" title={t("about.whatWeDo")}>
         <div className="mx-auto max-w-3xl">
-          <BulletList text={settings.areasOfWork || "To be updated"} />
+          <BulletList text={tValue({ en: settings.areasOfWork, hi: null }) || fallback} />
         </div>
       </Section>
-      <Section tone="cream" title="Where we work">
+      <Section tone="cream" title={t("about.where")}>
         <div className="mx-auto grid max-w-3xl gap-4 sm:grid-cols-2">
           <article className="rounded-2xl bg-card p-6 shadow-card">
             <p className="flex items-center gap-2 text-sm font-semibold text-navy">
               <MapPin className="size-4 text-teal" />
               Nepal
             </p>
-            <p className="mt-2 text-sm text-muted-foreground">
-              Fundraising for verified flood-relief needs. Field claims appear only when published
-              on the campaign page.
-            </p>
+            <p className="mt-2 text-sm text-muted-foreground">{t("about.nepalNote")}</p>
           </article>
           <article className="rounded-2xl bg-card p-6 shadow-card">
             <p className="flex items-center gap-2 text-sm font-semibold text-navy">
               <MapPin className="size-4 text-teal" />
               Assam, India
             </p>
-            <p className="mt-2 text-sm text-muted-foreground">
-              Fundraising for verified flood-relief needs in Assam. Operational details stay on the
-              campaign page as they are confirmed.
-            </p>
+            <p className="mt-2 text-sm text-muted-foreground">{t("about.assamNote")}</p>
           </article>
         </div>
         <p className="mx-auto mt-6 max-w-3xl text-center text-sm text-muted-foreground">
-          Registered office: {settings.address || "To be updated"}
+          {t("about.registeredOffice")}: {settings.address || fallback}
         </p>
       </Section>
-      <Section title="Team">
+      <Section title={t("about.team")}>
         {team.length === 0 ? (
-          <p className="text-center text-muted-foreground">
-            Leadership and team details: To be updated. Names will appear here when published by
-            the Foundation.
-          </p>
+          <p className="text-center text-muted-foreground">{t("about.teamEmpty")}</p>
         ) : (
           <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
             {team.map((member) => (
@@ -103,30 +98,30 @@ function AboutPage() {
                   </div>
                 )}
                 <h3 className="font-display text-xl text-navy">{member.name}</h3>
-                <p className="text-sm font-medium text-teal-dark">{member.role || "To be updated"}</p>
-                <p className="mt-2 text-sm text-muted-foreground">{member.bio || "To be updated"}</p>
+                <p className="text-sm font-medium text-teal-dark">{member.role || fallback}</p>
+                <p className="mt-2 text-sm text-muted-foreground">{tValue({ en: member.bio, hi: null }) || fallback}</p>
               </article>
             ))}
           </div>
         )}
       </Section>
-      <Section tone="cream" title="Organisation information">
+      <Section tone="cream" title={t("about.orgInfo")}>
         <dl className="mx-auto max-w-3xl space-y-4 rounded-2xl bg-card p-6 shadow-card text-sm">
           <div>
-            <dt className="text-muted-foreground">Legal name</dt>
+            <dt className="text-muted-foreground">{t("about.legalName")}</dt>
             <dd className="font-medium text-navy">{settings.orgName}</dd>
           </div>
           <div>
-            <dt className="text-muted-foreground">CIN</dt>
-            <dd className="font-medium text-navy">{settings.registrationCin || "To be updated"}</dd>
+            <dt className="text-muted-foreground">{t("common.cin")}</dt>
+            <dd className="font-medium text-navy">{settings.registrationCin || fallback}</dd>
           </div>
           <div>
-            <dt className="text-muted-foreground">Registered office</dt>
-            <dd className="font-medium text-navy">{settings.address || "To be updated"}</dd>
+            <dt className="text-muted-foreground">{t("about.registeredOffice")}</dt>
+            <dd className="font-medium text-navy">{settings.address || fallback}</dd>
           </div>
           <div>
-            <dt className="text-muted-foreground">Notes</dt>
-            <dd className="text-muted-foreground">{settings.registrationNotes || "To be updated"}</dd>
+            <dt className="text-muted-foreground">{t("about.notes")}</dt>
+            <dd className="text-muted-foreground">{tValue({ en: settings.registrationNotes, hi: null }) || fallback}</dd>
           </div>
         </dl>
       </Section>

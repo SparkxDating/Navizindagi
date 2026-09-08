@@ -1,13 +1,16 @@
 import { useState } from "react";
 import { Link, useRouterState } from "@tanstack/react-router";
 import { Menu, X } from "lucide-react";
+import { LanguageSwitcher } from "@/components/language-switcher";
 import { Button } from "@/components/ui/button";
+import { useLanguage, type MessageKey } from "@/lib/i18n";
 import { APP_NAME, NAV_LINKS, displayTagline } from "@/lib/site";
 import { cn } from "@/lib/utils";
 
 export function Navbar({ orgName, tagline }: { orgName?: string; tagline?: string }) {
   const [open, setOpen] = useState(false);
   const pathname = useRouterState({ select: (state) => state.location.pathname });
+  const { t } = useLanguage();
   const name = orgName || APP_NAME;
 
   return (
@@ -16,7 +19,7 @@ export function Navbar({ orgName, tagline }: { orgName?: string; tagline?: strin
         <Link to="/" className="flex min-w-0 items-center gap-2.5" onClick={() => setOpen(false)}>
           <img
             src="/logo.jpg"
-            alt={`${name} logo`}
+            alt={t("nav.logoAlt")}
             width={44}
             height={44}
             className="size-10 rounded-full object-cover sm:size-11"
@@ -31,17 +34,17 @@ export function Navbar({ orgName, tagline }: { orgName?: string; tagline?: strin
           </span>
         </Link>
 
-        <nav className="hidden items-center gap-0.5 lg:flex" aria-label="Primary">
+        <nav className="hidden items-center gap-0.5 lg:flex" aria-label={t("nav.primary")}>
           {NAV_LINKS.map((link) => {
             const active =
-              link.label === "Our Work"
+              link.id === "work"
                 ? false
                 : link.to === "/"
-                  ? pathname === "/" && link.label === "Home"
+                  ? pathname === "/" && link.id === "home"
                   : pathname === link.to;
             return (
               <Link
-                key={`${link.to}-${link.label}`}
+                key={`${link.to}-${link.id}`}
                 to={link.to}
                 hash={"hash" in link ? link.hash : undefined}
                 className={cn(
@@ -49,16 +52,17 @@ export function Navbar({ orgName, tagline }: { orgName?: string; tagline?: strin
                   active ? "bg-teal-soft text-teal-dark" : "text-navy/80 hover:bg-muted hover:text-navy",
                 )}
               >
-                {link.label}
+                {t(`nav.${link.id}` as MessageKey)}
               </Link>
             );
           })}
         </nav>
 
         <div className="flex shrink-0 items-center gap-2">
+          <LanguageSwitcher />
           <Button asChild size="sm" className="min-h-11 px-4 sm:min-h-11 sm:px-5">
             <Link to="/donate" search={{ campaign: undefined }} onClick={() => setOpen(false)}>
-              Donate Now
+              {t("nav.donate")}
             </Link>
           </Button>
           <button
@@ -66,7 +70,7 @@ export function Navbar({ orgName, tagline }: { orgName?: string; tagline?: strin
             className="inline-flex size-11 items-center justify-center rounded-full text-navy lg:hidden"
             aria-expanded={open}
             aria-controls="mobile-nav"
-            aria-label={open ? "Close menu" : "Open menu"}
+            aria-label={open ? t("nav.closeMenu") : t("nav.openMenu")}
             onClick={() => setOpen((value) => !value)}
           >
             {open ? <X className="size-5" /> : <Menu className="size-5" />}
@@ -76,21 +80,24 @@ export function Navbar({ orgName, tagline }: { orgName?: string; tagline?: strin
 
       {open ? (
         <div id="mobile-nav" className="border-t border-border bg-paper px-4 py-4 lg:hidden">
-          <nav className="flex flex-col gap-1" aria-label="Mobile">
+          <nav className="flex flex-col gap-1" aria-label={t("nav.mobile")}>
             {NAV_LINKS.map((link) => (
               <Link
-                key={`${link.to}-${link.label}`}
+                key={`${link.to}-${link.id}`}
                 to={link.to}
                 hash={"hash" in link ? link.hash : undefined}
                 className="rounded-xl px-3 py-3 text-sm font-medium text-navy hover:bg-muted"
                 onClick={() => setOpen(false)}
               >
-                {link.label}
+                {t(`nav.${link.id}` as MessageKey)}
               </Link>
             ))}
+            <div className="px-3 py-2">
+              <LanguageSwitcher />
+            </div>
             <Button asChild className="mt-2 min-h-12">
               <Link to="/donate" search={{ campaign: undefined }} onClick={() => setOpen(false)}>
-                Donate Now
+                {t("nav.donate")}
               </Link>
             </Button>
           </nav>

@@ -1,5 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { LegalPage } from "@/components/legal-page";
+import { useLanguage, usePageSeo } from "@/lib/i18n";
 
 export const Route = createFileRoute("/refund-policy")({
   component: RefundPage,
@@ -7,27 +8,15 @@ export const Route = createFileRoute("/refund-policy")({
 });
 
 function RefundPage() {
+  const { t } = useLanguage();
+  usePageSeo(t("seo.refundTitle"));
   return (
-    <LegalPage title="Donation and Refund Policy" updated="1 September 2026">
-      <p>
-        Donations made through this website are intended as voluntary contributions toward flood
-        relief and related Foundation work described on the campaign you select.
-      </p>
-      <p>
-        A donation is treated as received only after the payment gateway confirms it and this
-        website verifies that confirmation on the server. Incomplete, cancelled or unverified
-        checkouts are not successful donations.
-      </p>
-      <p>
-        If you were charged in error, or a duplicate payment was taken, contact the Foundation with
-        your reference ID. Refunds, where appropriate, are processed back through the original
-        payment method subject to the gateway and bank timelines.
-      </p>
-      <p>
-        Tax-exemption benefits apply only if the Foundation has published the relevant certificates.
-        Until then, treat deductibility as “To be updated”.
-      </p>
-      <p>Sandbox or test-mode acknowledgements are not live payments and are not refundable as money was not collected.</p>
+    <LegalPage title={t("legal.refundTitle")} updated={t("legal.updatedDate")}>
+      <p>{t("legal.refund1")}</p>
+      <p>{t("legal.refund2")}</p>
+      <p>{t("legal.refund3")}</p>
+      <p>{t("legal.refund4")}</p>
+      <p>{t("legal.refund5")}</p>
     </LegalPage>
   );
 }

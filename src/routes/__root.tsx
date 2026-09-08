@@ -13,6 +13,7 @@ import { NotFoundPage } from "@/components/not-found";
 import { Skeleton } from "@/components/ui/skeleton";
 import { AuthProvider } from "@/lib/auth/provider";
 import { AppErrorComponent } from "@/lib/error-component";
+import { LanguageProvider } from "@/lib/i18n";
 import { APP_DESCRIPTION, APP_NAME, APP_TAGLINE, APP_TITLE, SITE_URL } from "@/lib/site";
 import { getSettings } from "@/lib/server/site";
 import appCss from "@/styles.css?url";
@@ -81,11 +82,13 @@ function RootComponent() {
 
   return (
     <RootDocument>
-      <AuthProvider>
-        <PreviewHostBridge />
-        {bare ? <Outlet /> : <SiteShell settings={settings}><Outlet /></SiteShell>}
-        <Toaster position="top-center" richColors closeButton />
-      </AuthProvider>
+      <LanguageProvider>
+        <AuthProvider>
+          <PreviewHostBridge />
+          {bare ? <Outlet /> : <SiteShell settings={settings}><Outlet /></SiteShell>}
+          <Toaster position="top-center" richColors closeButton />
+        </AuthProvider>
+      </LanguageProvider>
     </RootDocument>
   );
 }

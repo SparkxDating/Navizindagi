@@ -2,6 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { Mail, MapPin, Phone } from "lucide-react";
 import { ContactForm } from "@/components/contact-form";
 import { PageHero } from "@/components/section";
+import { useLanguage, usePageSeo } from "@/lib/i18n";
 import { getPublicSite } from "@/lib/server/site";
 import { whatsappHref } from "@/lib/utils";
 
@@ -22,28 +23,30 @@ export const Route = createFileRoute("/contact")({
 
 function ContactPage() {
   const { settings } = Route.useLoaderData();
+  const { t } = useLanguage();
+  usePageSeo(t("seo.contactTitle"), t("seo.contactDescription"));
 
   return (
     <>
       <PageHero
-        eyebrow="Contact"
-        title="We welcome your questions"
-        lead="Use the form for general enquiries. For faster contact, call or message the published numbers."
+        eyebrow={t("contact.eyebrow")}
+        title={t("contact.title")}
+        lead={t("contact.lead")}
         image="/facebook-cover.jpg"
-        imageAlt="Navi Zindagi Foundation"
+        imageAlt={t("nav.logoAlt")}
       />
       <div className="mx-auto grid max-w-6xl gap-10 px-4 py-12 sm:px-6 lg:grid-cols-2">
         <div className="space-y-5">
           <div className="rounded-2xl bg-card p-6 shadow-card">
-            <h2 className="font-display text-xl text-navy">Official details</h2>
+            <h2 className="font-display text-xl text-navy">{t("contact.official")}</h2>
             <ul className="mt-4 space-y-4 text-sm text-muted-foreground">
               <li className="flex gap-3">
                 <MapPin className="mt-0.5 size-4 text-teal" />
-                {settings.address || "Address: To be updated"}
+                {settings.address || t("contact.addressMissing")}
               </li>
               <li className="flex gap-3">
                 <Phone className="mt-0.5 size-4 text-teal" />
-                {settings.phone || "Phone: To be updated"}
+                {settings.phone || t("contact.phoneMissing")}
               </li>
               <li className="flex gap-3">
                 <Mail className="mt-0.5 size-4 text-teal" />
@@ -52,7 +55,7 @@ function ContactPage() {
                     {settings.email}
                   </a>
                 ) : (
-                  "Email: To be updated"
+                  t("contact.emailMissing")
                 )}
               </li>
             </ul>
@@ -63,16 +66,16 @@ function ContactPage() {
                 target="_blank"
                 rel="noreferrer"
               >
-                WhatsApp
+                {t("common.whatsapp")}
               </a>
             ) : (
-              <p className="mt-4 text-sm text-muted-foreground">WhatsApp: To be updated</p>
+              <p className="mt-4 text-sm text-muted-foreground">{t("contact.whatsappMissing")}</p>
             )}
           </div>
           <div className="overflow-hidden rounded-2xl bg-muted shadow-card">
             {settings.mapsEmbedUrl ? (
               <iframe
-                title="Map"
+                title={t("contact.map")}
                 src={settings.mapsEmbedUrl}
                 className="h-72 w-full border-0"
                 loading="lazy"
@@ -80,7 +83,7 @@ function ContactPage() {
               />
             ) : (
               <div className="grid h-72 place-items-center px-6 text-center text-sm text-muted-foreground">
-                Google Maps embed: To be updated. Add a maps embed URL in admin settings.
+                {t("contact.mapMissing")}
               </div>
             )}
           </div>

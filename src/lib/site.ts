@@ -74,13 +74,13 @@ export const RELIEF_CATEGORIES = [
 ] as const;
 
 export const NAV_LINKS = [
-  { to: "/", label: "Home" },
-  { to: "/about", label: "About Us" },
-  { to: "/", label: "Our Work", hash: "our-work" },
-  { to: "/campaigns", label: "Campaigns" },
-  { to: "/volunteer", label: "Volunteer" },
-  { to: "/transparency", label: "Transparency" },
-  { to: "/contact", label: "Contact" },
+  { id: "home", to: "/", label: "Home" },
+  { id: "about", to: "/about", label: "About Us" },
+  { id: "work", to: "/", label: "Our Work", hash: "our-work" },
+  { id: "campaigns", to: "/campaigns", label: "Campaigns" },
+  { id: "volunteer", to: "/volunteer", label: "Volunteer" },
+  { id: "transparency", to: "/transparency", label: "Transparency" },
+  { id: "contact", to: "/contact", label: "Contact" },
 ] as const;
 
 export const WORK_AREAS = [
@@ -121,17 +121,17 @@ export const WORK_AREAS = [
 ] as const;
 
 export const SUPPORT_STEPS = [
-  { step: "01", title: "Donate", body: "आप अपनी क्षमता के अनुसार सहयोग कर सकते हैं।" },
-  { step: "02", title: "We Organize", body: "सहयोग को संबंधित सेवा या राहत गतिविधियों तक पहुंचाने की प्रक्रिया।" },
-  { step: "03", title: "Help Reaches People", body: "जरूरत के अनुसार सहायता पहुंचाने के प्रयास।" },
-  { step: "04", title: "Stay Connected", body: "गतिविधियों और अपडेट्स के माध्यम से जुड़े रहें।" },
+  { key: "donate", step: "01", title: "Donate", body: "आप अपनी क्षमता के अनुसार सहयोग कर सकते हैं।" },
+  { key: "organize", step: "02", title: "We Organize", body: "सहयोग को संबंधित सेवा या राहत गतिविधियों तक पहुंचाने की प्रक्रिया।" },
+  { key: "reach", step: "03", title: "Help Reaches People", body: "जरूरत के अनुसार सहायता पहुंचाने के प्रयास।" },
+  { key: "connected", step: "04", title: "Stay Connected", body: "गतिविधियों और अपडेट्स के माध्यम से जुड़े रहें।" },
 ] as const;
 
 export const WHY_JOIN_POINTS = [
-  "सेवा पर केंद्रित पहल",
-  "जरूरतमंदों के लिए सहयोग",
-  "समुदाय की भागीदारी",
-  "पारदर्शिता और जिम्मेदारी",
+  { key: "service", text: "सेवा पर केंद्रित पहल" },
+  { key: "support", text: "जरूरतमंदों के लिए सहयोग" },
+  { key: "community", text: "समुदाय की भागीदारी" },
+  { key: "transparency", text: "पारदर्शिता और जिम्मेदारी" },
 ] as const;
 
 export const ACTIVITY_PREVIEWS = [

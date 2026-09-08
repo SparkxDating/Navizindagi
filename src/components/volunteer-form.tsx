@@ -8,11 +8,12 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { AVAILABILITY_OPTIONS, INTEREST_AREAS } from "@/lib/site";
+import { VOLUNTEER_AVAILABILITY, VOLUNTEER_INTERESTS, useLanguage, type MessageKey } from "@/lib/i18n";
 import { submitVolunteer } from "@/lib/server/site";
 
 export function VolunteerForm() {
   const submit = useServerFn(submitVolunteer);
+  const { t } = useLanguage();
   const [busy, setBusy] = useState(false);
   const [done, setDone] = useState(false);
   const [interests, setInterests] = useState<string[]>([]);
@@ -28,11 +29,11 @@ export function VolunteerForm() {
     event.preventDefault();
     const form = new FormData(event.currentTarget);
     if (interests.length === 0) {
-      toast.error("Select at least one area of interest.");
+      toast.error(t("volunteer.interestError"));
       return;
     }
     if (form.get("consent") !== "on") {
-      toast.error("Consent is required.");
+      toast.error(t("volunteer.consentError"));
       return;
     }
     setBusy(true);
@@ -56,7 +57,7 @@ export function VolunteerForm() {
       event.currentTarget.reset();
       setInterests([]);
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : "Could not send your registration.");
+      toast.error(error instanceof Error ? error.message : t("volunteer.sendError"));
     } finally {
       setBusy(false);
     }
@@ -65,14 +66,10 @@ export function VolunteerForm() {
   if (done) {
     return (
       <div className="rounded-2xl bg-teal-soft p-8 text-center shadow-card">
-        <h2 className="font-display text-2xl text-navy">Thank you for offering to help</h2>
-        <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
-          Your volunteer registration has been received. We will review your information and contact
-          you if there is a suitable opportunity. Submitting this form is not a guarantee of
-          placement.
-        </p>
+        <h2 className="font-display text-2xl text-navy">{t("volunteer.thanks")}</h2>
+        <p className="mt-3 text-sm leading-relaxed text-muted-foreground">{t("volunteer.thanksBody")}</p>
         <Button type="button" variant="outline" className="mt-6" onClick={() => setDone(false)}>
-          Submit another response
+          {t("volunteer.another")}
         </Button>
       </div>
     );
@@ -81,72 +78,72 @@ export function VolunteerForm() {
   return (
     <form onSubmit={(event) => void onSubmit(event)} className="space-y-5 rounded-2xl bg-card p-6 shadow-card sm:p-8">
       <div className="grid gap-4 sm:grid-cols-2">
-        <Field label="Full name" htmlFor="fullName" required>
+        <Field label={t("volunteer.fullName")} htmlFor="fullName" required>
           <Input id="fullName" name="fullName" required minLength={2} maxLength={120} autoComplete="name" />
         </Field>
-        <Field label="Email" htmlFor="email" required>
+        <Field label={t("volunteer.email")} htmlFor="email" required>
           <Input id="email" name="email" type="email" required autoComplete="email" />
         </Field>
-        <Field label="Phone" htmlFor="phone" required>
+        <Field label={t("volunteer.phone")} htmlFor="phone" required>
           <Input id="phone" name="phone" type="tel" required minLength={8} maxLength={20} autoComplete="tel" />
         </Field>
-        <Field label="City" htmlFor="city" required>
+        <Field label={t("volunteer.city")} htmlFor="city" required>
           <Input id="city" name="city" required minLength={2} maxLength={80} autoComplete="address-level2" />
         </Field>
-        <Field label="State / country" htmlFor="stateCountry" required className="sm:col-span-2">
+        <Field label={t("volunteer.state")} htmlFor="stateCountry" required className="sm:col-span-2">
           <Input id="stateCountry" name="stateCountry" required minLength={2} maxLength={80} autoComplete="country-name" />
         </Field>
       </div>
 
       <fieldset className="space-y-2">
         <legend className="text-sm font-medium text-navy">
-          Areas of interest <span className="text-destructive">*</span>
+          {t("volunteer.interests")} <span className="text-destructive">*</span>
         </legend>
         <div className="grid gap-2 sm:grid-cols-2">
-          {INTEREST_AREAS.map((area) => (
-            <label key={area} className="flex items-start gap-2 rounded-xl bg-cream px-3 py-2 text-sm">
+          {VOLUNTEER_INTERESTS.map((area) => (
+            <label key={area.value} className="flex items-start gap-2 rounded-xl bg-cream px-3 py-2 text-sm">
               <Checkbox
-                checked={interests.includes(area)}
-                onChange={() => toggleInterest(area)}
+                checked={interests.includes(area.value)}
+                onChange={() => toggleInterest(area.value)}
               />
-              {area}
+              {t(`volunteer.interest.${area.key}` as MessageKey)}
             </label>
           ))}
         </div>
       </fieldset>
 
-      <Field label="Availability" htmlFor="availability" required>
+      <Field label={t("volunteer.availability")} htmlFor="availability" required>
         <Select id="availability" name="availability" required defaultValue="">
           <option value="" disabled>
-            Select availability
+            {t("volunteer.selectAvailability")}
           </option>
-          {AVAILABILITY_OPTIONS.map((option) => (
-            <option key={option} value={option}>
-              {option}
+          {VOLUNTEER_AVAILABILITY.map((option) => (
+            <option key={option.value} value={option.value}>
+              {t(`volunteer.avail.${option.key}` as MessageKey)}
             </option>
           ))}
         </Select>
       </Field>
 
-      <Field label="Skills" htmlFor="skills" hint="Optional — languages, first aid, logistics, design, and so on.">
+      <Field label={t("volunteer.skills")} htmlFor="skills" hint={t("volunteer.skillsHint")}>
         <Input id="skills" name="skills" maxLength={500} />
       </Field>
-      <Field label="Message" htmlFor="message">
-        <Textarea id="message" name="message" maxLength={1000} placeholder="Anything else the team should know" />
+      <Field label={t("volunteer.message")} htmlFor="message">
+        <Textarea id="message" name="message" maxLength={1000} placeholder={t("volunteer.messagePlaceholder")} />
       </Field>
 
       <label className="flex items-start gap-3 text-sm text-navy">
         <Checkbox name="consent" required />
-        I consent to Navi Zindagi Foundation storing this information to follow up about volunteer opportunities. I understand this is not a job offer or a guaranteed placement.
+        {t("volunteer.consent")}
       </label>
 
       <div className="hidden" aria-hidden>
-        <Label htmlFor="vol-website">Website</Label>
+        <Label htmlFor="vol-website">{t("volunteer.website")}</Label>
         <Input id="vol-website" value={website} onChange={(event) => setWebsite(event.target.value)} tabIndex={-1} autoComplete="off" />
       </div>
 
       <Button type="submit" disabled={busy} className="min-h-12 w-full sm:w-auto">
-        {busy ? "Sending…" : "Submit volunteer registration"}
+        {busy ? t("common.sending") : t("volunteer.submit")}
       </Button>
     </form>
   );

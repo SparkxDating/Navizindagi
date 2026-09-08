@@ -14,6 +14,7 @@ import {
   tValue as resolveLocalizedValue,
   writeStoredLanguage,
 } from "./core.ts";
+import { hindiForEnglish } from "./content.ts";
 import { translate, type TranslateFn } from "./messages.ts";
 import { DEFAULT_LANGUAGE, type Language } from "./types.ts";
 
@@ -55,7 +56,11 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
   const t = useCallback<TranslateFn>((key, vars) => translate(language, key, vars), [language]);
 
   const tValue = useCallback(
-    (parts: { en?: string | null; hi?: string | null }) => resolveLocalizedValue(language, parts),
+    (parts: { en?: string | null; hi?: string | null }) =>
+      resolveLocalizedValue(language, {
+        en: parts.en,
+        hi: parts.hi?.trim() ? parts.hi : hindiForEnglish(parts.en),
+      }),
     [language],
   );
 

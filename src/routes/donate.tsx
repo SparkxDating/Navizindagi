@@ -37,7 +37,7 @@ export const Route = createFileRoute("/donate")({
 function DonatePage() {
   const { campaign } = Route.useSearch();
   const { site, payment } = Route.useLoaderData();
-  const { t } = useLanguage();
+  const { t, tValue } = useLanguage();
   usePageSeo(t("seo.donateTitle"), t("seo.donateDescription"));
 
   return (
@@ -86,7 +86,9 @@ function DonatePage() {
           </div>
           <div className="rounded-2xl bg-card p-6 shadow-card">
             <h2 className="font-display text-xl text-navy">{t("donate.paymentInfo")}</h2>
-            <p className="mt-3 text-sm leading-relaxed text-muted-foreground">{site.settings.paymentInfo}</p>
+            <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
+              {tValue({ en: site.settings.paymentInfo, hi: null })}
+            </p>
           </div>
         </aside>
       </div>

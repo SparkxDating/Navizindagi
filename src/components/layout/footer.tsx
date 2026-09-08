@@ -1,6 +1,6 @@
 import { Link } from "@tanstack/react-router";
 import { Facebook, Instagram, Mail, MapPin, Phone } from "lucide-react";
-import { displayCampaignTitle, useLanguage } from "@/lib/i18n";
+import { displayCampaignTitle, localizeDb, useLanguage } from "@/lib/i18n";
 import type { SiteSettings } from "@/lib/types";
 import { APP_NAME, displayTagline } from "@/lib/site";
 
@@ -24,7 +24,7 @@ export function Footer({ settings }: { settings: SiteSettings | null }) {
             <img src="/logo.jpg" alt={t("nav.logoAlt")} width={48} height={48} className="size-12 rounded-full object-cover" />
             <div>
               <p className="font-display text-xl text-cream">{org}</p>
-              <p className="text-sm text-cream/70">{displayTagline(settings?.tagline)}</p>
+              <p className="text-sm text-cream/70">{localizeDb(language, displayTagline(settings?.tagline))}</p>
             </div>
           </div>
           <p className="mt-4 max-w-sm text-sm leading-relaxed text-cream/70">

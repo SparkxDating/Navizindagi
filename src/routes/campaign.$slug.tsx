@@ -6,7 +6,7 @@ import { UpdateCard } from "@/components/update-card";
 import { Button } from "@/components/ui/button";
 import { ProgressBar } from "@/components/ui/progress";
 import { StatTile } from "@/components/stat-tile";
-import { dateLocale, displayCampaignTitle, useLanguage, usePageSeo } from "@/lib/i18n";
+import { dateLocale, displayCampaignTitle, localizeDb, useLanguage, usePageSeo } from "@/lib/i18n";
 import { getCampaignPage } from "@/lib/server/site";
 import { RELIEF_CATEGORIES, SITE_URL } from "@/lib/site";
 import { formatDate, formatINR } from "@/lib/utils";
@@ -48,6 +48,7 @@ function CampaignPage() {
   const locale = dateLocale(language);
   const title = campaign ? displayCampaignTitle(language, campaign.slug, campaign.title) : "";
   const description = campaign ? tValue({ en: campaign.shortDescription, hi: null }) : "";
+  const location = campaign ? localizeDb(language, campaign.locationLabel) : "";
   usePageSeo(title ? `${title} · Navi Zindagi Foundation` : t("seo.campaignsTitle"), description);
   if (!campaign) return null;
   const others = campaigns.filter((item) => item.id !== campaign.id && item.slug !== "general-relief");
@@ -57,7 +58,7 @@ function CampaignPage() {
     campaign.heroImageUrl ? { src: campaign.heroImageUrl, alt: title } : null,
     ...RELIEF_CATEGORIES.filter((item) =>
       campaign.reliefPriorities.some((priority) => priority.toLowerCase().includes(item.title.split(" ")[0].toLowerCase())),
-    ).map((item) => ({ src: item.image, alt: t("campaign.reliefAlt", { title: item.title }) })),
+    ).map((item) => ({ src: item.image, alt: t("campaign.reliefAlt", { title: localizeDb(language, item.title) }) })),
   ].filter((item, index, list): item is { src: string; alt: string } => {
     if (!item) return false;
     return list.findIndex((other) => other?.src === item.src) === index;
@@ -76,14 +77,14 @@ function CampaignPage() {
         {campaign.heroImageUrl ? (
           <img
             src={campaign.heroImageUrl}
-            alt={`${title} · ${campaign.locationLabel}`}
+            alt={`${title} · ${location}`}
             className="absolute inset-0 size-full object-cover opacity-45"
             fetchPriority="high"
           />
         ) : null}
         <div className="absolute inset-0 bg-navy/75" />
         <div className="relative mx-auto max-w-6xl px-4 py-16 sm:px-6 sm:py-24">
-          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-teal-soft">{campaign.locationLabel}</p>
+          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-teal-soft">{location}</p>
           <h1 className="mt-3 max-w-3xl font-display text-3xl text-cream sm:text-5xl">{title}</h1>
           <p className="mt-4 max-w-2xl text-base text-cream/85">{description}</p>
           <div className="mt-5 flex flex-wrap items-center gap-3 text-sm text-cream/80">
@@ -118,7 +119,7 @@ function CampaignPage() {
                 campaign.reliefPriorities.map((item) => (
                   <li key={item} className="flex gap-3">
                     <span className="mt-2 size-1.5 shrink-0 rounded-full bg-teal" />
-                    {item}
+                    {localizeDb(language, item)}
                   </li>
                 ))
               )}

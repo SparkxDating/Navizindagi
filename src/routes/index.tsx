@@ -15,7 +15,7 @@ import { Section } from "@/components/section";
 import { TrustBar } from "@/components/trust-bar";
 import { UpdateCard } from "@/components/update-card";
 import { Button } from "@/components/ui/button";
-import { useLanguage, usePageSeo, type MessageKey } from "@/lib/i18n";
+import { localizeDb, useLanguage, usePageSeo, type MessageKey } from "@/lib/i18n";
 import {
   ACTIVITY_PREVIEWS,
   APP_DESCRIPTION,
@@ -55,7 +55,7 @@ const WORK_ICONS: Record<string, ReactNode> = {
 
 function HomePage() {
   const { settings, campaigns, updates } = Route.useLoaderData();
-  const { t, tValue } = useLanguage();
+  const { t, tValue, language } = useLanguage();
   usePageSeo(t("seo.homeTitle"), t("seo.homeDescription"));
   const nepal = campaigns.find((campaign) => campaign.slug === "nepal-flood-relief");
   const assam = campaigns.find((campaign) => campaign.slug === "assam-flood-relief");
@@ -77,7 +77,7 @@ function HomePage() {
         <div className="relative mx-auto max-w-6xl px-4 py-14 sm:px-6 sm:py-24 lg:py-28">
           <div className="reveal max-w-3xl">
             <p className="text-xs font-semibold uppercase tracking-[0.2em] text-teal-soft">
-              {displayTagline(settings.tagline)}
+              {localizeDb(language, displayTagline(settings.tagline))}
             </p>
             <h1 className="mt-4 font-display text-cream">{t("home.heroTitle")}</h1>
             <p className="mt-5 max-w-2xl text-base leading-relaxed text-cream/90 sm:text-lg">

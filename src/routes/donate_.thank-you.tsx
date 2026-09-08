@@ -1,9 +1,9 @@
 import { Link, createFileRoute } from "@tanstack/react-router";
 import { Download, Printer, Share2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { dateLocale, displayCampaignTitle, useLanguage, usePageSeo } from "@/lib/i18n";
+import { dateLocale, displayCampaignTitle, localizeDb, useLanguage, usePageSeo } from "@/lib/i18n";
 import { getDonationReceipt } from "@/lib/server/site";
-import { APP_NAME, SITE_URL } from "@/lib/site";
+import { APP_NAME, SITE_URL, displayTagline } from "@/lib/site";
 import { downloadTextFile, formatDate, formatINR } from "@/lib/utils";
 
 export const Route = createFileRoute("/donate_/thank-you")({
@@ -89,7 +89,9 @@ function ThankYouPage() {
           <img src="/logo.jpg" alt="" className="size-14 rounded-full object-cover" />
           <div>
             <p className="font-display text-xl text-navy">{settings?.orgName}</p>
-            <p className="text-sm text-muted-foreground">{settings?.tagline}</p>
+            <p className="text-sm text-muted-foreground">
+              {settings?.tagline ? localizeDb(language, displayTagline(settings.tagline)) : ""}
+            </p>
           </div>
         </div>
         <h1 className="mt-8 font-display text-3xl text-navy sm:text-4xl">

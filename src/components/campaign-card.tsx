@@ -2,7 +2,7 @@ import { Link } from "@tanstack/react-router";
 import { MapPin } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ProgressBar } from "@/components/ui/progress";
-import { dateLocale, displayCampaignTitle, useLanguage } from "@/lib/i18n";
+import { dateLocale, displayCampaignTitle, localizeDb, useLanguage } from "@/lib/i18n";
 import type { Campaign } from "@/lib/types";
 import { cn, formatINR } from "@/lib/utils";
 
@@ -16,6 +16,7 @@ export function CampaignCard({
   const { t, language, tValue } = useLanguage();
   const title = displayCampaignTitle(language, campaign.slug, campaign.title);
   const description = tValue({ en: campaign.shortDescription, hi: null });
+  const location = localizeDb(language, campaign.locationLabel);
   const hasFigures = campaign.targetAmount > 0 || campaign.amountRaised > 0;
   const locale = dateLocale(language);
   return (
@@ -29,7 +30,7 @@ export function CampaignCard({
         {campaign.heroImageUrl ? (
           <img
             src={campaign.heroImageUrl}
-            alt={`${title} · ${campaign.locationLabel}`}
+            alt={`${title} · ${location}`}
             className="size-full object-cover transition-transform duration-500 ease-out motion-safe:hover:scale-[1.03]"
             loading="lazy"
           />
@@ -37,7 +38,7 @@ export function CampaignCard({
         <div className="absolute inset-x-0 bottom-0 bg-navy/70 p-4">
           <p className="inline-flex items-center gap-1.5 rounded-full bg-card/95 px-2.5 py-1 text-xs font-semibold text-navy">
             <MapPin className="size-3.5" aria-hidden />
-            {campaign.locationLabel}
+            {location}
           </p>
         </div>
       </div>

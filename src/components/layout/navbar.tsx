@@ -3,14 +3,14 @@ import { Link, useRouterState } from "@tanstack/react-router";
 import { Menu, X } from "lucide-react";
 import { LanguageSwitcher } from "@/components/language-switcher";
 import { Button } from "@/components/ui/button";
-import { useLanguage, type MessageKey } from "@/lib/i18n";
+import { localizeDb, useLanguage, type MessageKey } from "@/lib/i18n";
 import { APP_NAME, NAV_LINKS, displayTagline } from "@/lib/site";
 import { cn } from "@/lib/utils";
 
 export function Navbar({ orgName, tagline }: { orgName?: string; tagline?: string }) {
   const [open, setOpen] = useState(false);
   const pathname = useRouterState({ select: (state) => state.location.pathname });
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const name = orgName || APP_NAME;
 
   return (
@@ -29,7 +29,7 @@ export function Navbar({ orgName, tagline }: { orgName?: string; tagline?: strin
               {name}
             </span>
             <span className="hidden text-[11px] tracking-wide text-muted-foreground sm:block">
-              {displayTagline(tagline)}
+              {localizeDb(language, displayTagline(tagline))}
             </span>
           </span>
         </Link>

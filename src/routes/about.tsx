@@ -2,9 +2,9 @@ import { createFileRoute } from "@tanstack/react-router";
 import { MapPin } from "lucide-react";
 import { BulletList, Prose } from "@/components/prose";
 import { PageHero, Section } from "@/components/section";
-import { useLanguage, usePageSeo } from "@/lib/i18n";
+import { localizeDb, useLanguage, usePageSeo } from "@/lib/i18n";
 import { getPublicSite } from "@/lib/server/site";
-import { SITE_URL } from "@/lib/site";
+import { SITE_URL, displayTagline } from "@/lib/site";
 
 export const Route = createFileRoute("/about")({
   loader: () => getPublicSite(),
@@ -25,7 +25,7 @@ export const Route = createFileRoute("/about")({
 
 function AboutPage() {
   const { settings, team } = Route.useLoaderData();
-  const { t, tValue } = useLanguage();
+  const { t, tValue, language } = useLanguage();
   usePageSeo(t("seo.aboutTitle"), t("seo.aboutDescription"));
   const fallback = t("common.toBeUpdated");
 
@@ -34,7 +34,7 @@ function AboutPage() {
       <PageHero
         eyebrow={t("about.eyebrow")}
         title={settings.orgName}
-        lead={settings.tagline}
+        lead={localizeDb(language, displayTagline(settings.tagline))}
         image="/facebook-cover.jpg"
         imageAlt={t("nav.logoAlt")}
       />
@@ -98,7 +98,7 @@ function AboutPage() {
                   </div>
                 )}
                 <h3 className="font-display text-xl text-navy">{member.name}</h3>
-                <p className="text-sm font-medium text-teal-dark">{member.role || fallback}</p>
+                <p className="text-sm font-medium text-teal-dark">{tValue({ en: member.role, hi: null }) || fallback}</p>
                 <p className="mt-2 text-sm text-muted-foreground">{tValue({ en: member.bio, hi: null }) || fallback}</p>
               </article>
             ))}

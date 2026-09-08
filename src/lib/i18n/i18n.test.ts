@@ -13,6 +13,7 @@ import {
 } from "./core.ts";
 import { en } from "./en.ts";
 import { hi } from "./hi.ts";
+import { hindiForEnglish, localizeDb } from "./content.ts";
 import { displayCampaignTitle, translate } from "./messages.ts";
 import { DEFAULT_LANGUAGE, LANGUAGE_STORAGE_KEY, type NestedMessages } from "./types.ts";
 
@@ -114,6 +115,41 @@ describe("i18n language system", () => {
     assert.equal(donation.campaignTitle, "Nepal Flood Relief");
     assert.equal(displayCampaignTitle("hi", donation.campaignSlug, donation.campaignTitle), "नेपाल बाढ़ राहत");
     assert.equal(donation.amount, 500);
+  });
+
+  it("displays known English database copy in English", () => {
+    const about =
+      "Navi Zindagi Foundation is a registered Indian non-governmental organisation working towards sustainable development in health, education, nutrition and environment. This website is dedicated to flood-relief fundraising and volunteer mobilisation for families affected in Nepal and Assam. Operational claims on this site are limited to information the Foundation has confirmed and published through the admin area.";
+    assert.equal(localizeDb("en", about), about);
+    assert.equal(localizeDb("en", "Support verified flood-relief efforts for families affected by monsoon flooding in Nepal."), "Support verified flood-relief efforts for families affected by monsoon flooding in Nepal.");
+    assert.equal(displayCampaignTitle("en", "nepal-flood-relief", "Nepal Flood Relief"), "Nepal Flood Relief");
+  });
+
+  it("displays known Hindi overlays in Hindi", () => {
+    const about =
+      "Navi Zindagi Foundation is a registered Indian non-governmental organisation working towards sustainable development in health, education, nutrition and environment. This website is dedicated to flood-relief fundraising and volunteer mobilisation for families affected in Nepal and Assam. Operational claims on this site are limited to information the Foundation has confirmed and published through the admin area.";
+    assert.equal(localizeDb("hi", "Nepal Flood Relief"), "नेपाल बाढ़ राहत");
+    assert.equal(localizeDb("hi", "How are donations used?"), "दान का उपयोग कैसे होता है?");
+    assert.match(localizeDb("hi", about), /नवी ज़िंदगी फाउंडेशन/);
+    assert.equal(
+      localizeDb("hi", "Support verified flood-relief efforts for families affected by monsoon flooding in Nepal."),
+      "नेपाल में मानसून बाढ़ से प्रभावित परिवारों के लिए सत्यापित बाढ़-राहत प्रयासों का सहयोग करें।",
+    );
+    assert.equal(displayCampaignTitle("hi", "assam-flood-relief", "Assam Flood Relief"), "असम बाढ़ राहत");
+  });
+
+  it("falls back to English when Hindi overlay is missing", () => {
+    const custom = "A new unpublished field report from the Foundation.";
+    assert.equal(hindiForEnglish(custom), null);
+    assert.equal(localizeDb("hi", custom), custom);
+    assert.equal(tValue("hi", { en: custom, hi: null }), custom);
+    assert.equal(localizeDb("hi", "To be updated"), "अद्यतन किया जाना है");
+  });
+
+  it("keeps existing campaign identifiers working after language change", () => {
+    assert.equal(displayCampaignTitle("hi", "nepal-flood-relief", "Nepal Flood Relief"), "नेपाल बाढ़ राहत");
+    assert.equal(displayCampaignTitle("en", "nepal-flood-relief", "Nepal Flood Relief"), "Nepal Flood Relief");
+    assert.equal(displayCampaignTitle("hi", "unknown-campaign", "Winter Relief"), "Winter Relief");
   });
 
   it("interpolates placeholders without treating them as HTML", () => {

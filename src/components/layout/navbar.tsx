@@ -33,14 +33,19 @@ export function Navbar({ orgName, tagline }: { orgName?: string; tagline?: strin
 
         <nav className="hidden items-center gap-0.5 lg:flex" aria-label="Primary">
           {NAV_LINKS.map((link) => {
-            const active = link.label !== "Our Work" && pathname === link.to;
+            const active =
+              link.label === "Our Work"
+                ? false
+                : link.to === "/"
+                  ? pathname === "/" && link.label === "Home"
+                  : pathname === link.to;
             return (
               <Link
                 key={`${link.to}-${link.label}`}
                 to={link.to}
                 hash={"hash" in link ? link.hash : undefined}
                 className={cn(
-                  "rounded-full px-3 py-2 text-sm font-medium transition-colors",
+                  "rounded-full px-2.5 py-2 text-sm font-medium transition-colors",
                   active ? "bg-teal-soft text-teal-dark" : "text-navy/80 hover:bg-muted hover:text-navy",
                 )}
               >
@@ -83,13 +88,6 @@ export function Navbar({ orgName, tagline }: { orgName?: string; tagline?: strin
                 {link.label}
               </Link>
             ))}
-            <Link
-              to="/contact"
-              className="rounded-xl px-3 py-3 text-sm font-medium text-navy hover:bg-muted"
-              onClick={() => setOpen(false)}
-            >
-              Contact
-            </Link>
             <Button asChild className="mt-2 min-h-12">
               <Link to="/donate" search={{ campaign: undefined }} onClick={() => setOpen(false)}>
                 Donate Now

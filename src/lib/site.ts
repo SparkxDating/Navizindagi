@@ -1,8 +1,8 @@
 export const APP_NAME = "Navi Zindagi Foundation";
 export const APP_TAGLINE = "Empower • Elevate • Transform";
-export const APP_TITLE = "Navi Zindagi Foundation | Flood Relief & Donations";
+export const APP_TITLE = "Navi Zindagi Foundation | सेवा, राहत और सामाजिक कल्याण";
 export const APP_DESCRIPTION =
-  "Navi Zindagi Foundation supports verified flood-relief efforts in Nepal and Assam through donations, volunteers and transparent relief updates.";
+  "Navi Zindagi Foundation works through humanitarian relief, education support, Gau Seva, food distribution and community welfare initiatives.";
 export const SITE_URL = "https://navizindagi.org";
 
 export function displayTagline(value?: string | null) {
@@ -74,9 +74,70 @@ export const RELIEF_CATEGORIES = [
 ] as const;
 
 export const NAV_LINKS = [
+  { to: "/", label: "Home" },
+  { to: "/about", label: "About Us" },
+  { to: "/", label: "Our Work", hash: "our-work" },
   { to: "/campaigns", label: "Campaigns" },
-  { to: "/about", label: "Our Work", hash: "what-we-do" },
-  { to: "/about", label: "About" },
-  { to: "/transparency", label: "Transparency" },
   { to: "/volunteer", label: "Volunteer" },
+  { to: "/transparency", label: "Transparency" },
+  { to: "/contact", label: "Contact" },
+] as const;
+
+export const WORK_AREAS = [
+  {
+    key: "disaster",
+    title: "Disaster & Flood Relief",
+    body: "बाढ़, आपदा और कठिन परिस्थितियों से प्रभावित लोगों तक आवश्यक सहायता और राहत पहुंचाने के प्रयास।",
+    image: "/relief-shelter.jpg",
+  },
+  {
+    key: "gau-seva",
+    title: "Gau Seva",
+    body: "गौवंश की देखभाल, भोजन और कल्याण से जुड़े सेवा कार्यों में समुदाय की भागीदारी।",
+  },
+  {
+    key: "education",
+    title: "Education Support",
+    body: "बच्चों और विद्यार्थियों को शिक्षा से जुड़े संसाधन और अवसर उपलब्ध कराने की दिशा में सहयोग।",
+  },
+  {
+    key: "food",
+    title: "Free Food Distribution",
+    body: "जरूरतमंद लोगों और कठिन परिस्थितियों से गुजर रहे परिवारों के लिए भोजन वितरण से जुड़े सेवा प्रयास।",
+    image: "/relief-food.jpg",
+  },
+  {
+    key: "community",
+    title: "Community Welfare",
+    body: "स्थानीय समुदायों की जरूरतों के अनुसार सामाजिक सहयोग और जनकल्याण से जुड़े कार्य।",
+    image: "/relief-hygiene.jpg",
+  },
+  {
+    key: "humanitarian",
+    title: "Humanitarian Support",
+    body: "जरूरतमंद लोगों तक आवश्यक सहायता पहुंचाने और कठिन समय में साथ खड़े होने के प्रयास।",
+    image: "/relief-medical.jpg",
+  },
+] as const;
+
+export const SUPPORT_STEPS = [
+  { step: "01", title: "Donate", body: "आप अपनी क्षमता के अनुसार सहयोग कर सकते हैं।" },
+  { step: "02", title: "We Organize", body: "सहयोग को संबंधित सेवा या राहत गतिविधियों तक पहुंचाने की प्रक्रिया।" },
+  { step: "03", title: "Help Reaches People", body: "जरूरत के अनुसार सहायता पहुंचाने के प्रयास।" },
+  { step: "04", title: "Stay Connected", body: "गतिविधियों और अपडेट्स के माध्यम से जुड़े रहें।" },
+] as const;
+
+export const WHY_JOIN_POINTS = [
+  "सेवा पर केंद्रित पहल",
+  "जरूरतमंदों के लिए सहयोग",
+  "समुदाय की भागीदारी",
+  "पारदर्शिता और जिम्मेदारी",
+] as const;
+
+export const ACTIVITY_PREVIEWS = [
+  { key: "flood", title: "Flood Relief", image: "/campaign-nepal.jpg" },
+  { key: "gau", title: "Gau Seva" },
+  { key: "education", title: "Education" },
+  { key: "food", title: "Food Distribution", image: "/relief-food.jpg" },
+  { key: "community", title: "Community Welfare", image: "/relief-hygiene.jpg" },
 ] as const;

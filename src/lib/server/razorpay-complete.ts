@@ -34,7 +34,6 @@ export type WebhookEventStatus = "received" | "processed" | "ignored" | "failed"
 export function webhookEventDisposition(existing: { status: string } | null) {
   if (!existing) return "process" as const;
   if (existing.status === "processed" || existing.status === "ignored") return "skip" as const;
-  if (existing.status === "received") return "skip" as const;
   return "retry" as const;
 }
 

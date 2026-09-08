@@ -60,8 +60,12 @@ describe("webhook event idempotency", () => {
     assert.equal(webhookEventDisposition(null), "process");
     assert.equal(webhookEventDisposition({ status: "processed" }), "skip");
     assert.equal(webhookEventDisposition({ status: "ignored" }), "skip");
-    assert.equal(webhookEventDisposition({ status: "received" }), "skip");
+    assert.equal(webhookEventDisposition({ status: "received" }), "retry");
     assert.equal(webhookEventDisposition({ status: "failed" }), "retry");
+  });
+
+  it("retries a received event because the previous attempt may have crashed before completion", () => {
+    assert.equal(webhookEventDisposition({ status: "received" }), "retry");
   });
 });
 

@@ -61,8 +61,6 @@ function ThankYouPage() {
       `Amount: ${formatINR(donation.amount)}`,
       `Status: ${statusLabel(donation.status)}`,
       `Date: ${formatDate(donation.createdAt)}`,
-      `Donor: ${donation.isAnonymous ? "Anonymous" : donation.donorName}`,
-      `Email: ${donation.email}`,
       "",
       "This is a payment acknowledgement. It is not an 80G or tax-exemption certificate unless the Foundation has separately issued one.",
     ].join("\n");
@@ -109,8 +107,6 @@ function ThankYouPage() {
           <Row label="Amount" value={formatINR(donation.amount)} />
           <Row label="Payment status" value={statusLabel(donation.status)} />
           <Row label="Date" value={formatDate(donation.createdAt)} />
-          <Row label="Donor" value={donation.isAnonymous ? "Anonymous" : donation.donorName} />
-          <Row label="Email" value={donation.email} />
         </dl>
 
         <div className="mt-6 rounded-xl border border-border p-4 text-sm text-muted-foreground">

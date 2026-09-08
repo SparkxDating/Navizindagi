@@ -6,12 +6,12 @@ import {
   slugSchema,
   volunteerSchema,
 } from "@/lib/schemas";
+import { toPublicReceipt } from "@/lib/public-receipt";
 import type { Campaign, SiteSettings } from "@/lib/types";
 import { sanitizeMultiline, sanitizePlainText } from "@/lib/utils";
 import {
   CAMPAIGN_SELECT,
   mapCampaign,
-  mapDonation,
   mapFaq,
   mapReport,
   mapSettings,
@@ -103,15 +103,21 @@ export const getDonationReceipt = createServerFn({ method: "GET" })
   .handler(async ({ data }) => {
     const sql = await getSql();
     const rows = await sql.query<Record<string, unknown>>(
-      `select d.*, c.title as campaign_title, c.slug as campaign_slug
+      `select d.reference_id, d.amount, d.currency, d.status, d.created_at,
+              c.title as campaign_title, c.slug as campaign_slug
        from donations d
        join campaigns c on c.id = d.campaign_id
        where d.reference_id = $1`,
       [data.referenceId],
     );
-    const donation = rows[0] ? mapDonation(rows[0]) : null;
+    const donation = toPublicReceipt(rows[0] ?? null);
     const settings = await loadSettings();
-    return { donation, settings };
+    return {
+      donation,
+      settings: settings
+        ? { orgName: settings.orgName, tagline: settings.tagline }
+        : null,
+    };
   });
 
 export const submitVolunteer = createServerFn({ method: "POST" })

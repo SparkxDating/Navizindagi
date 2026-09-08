@@ -156,7 +156,7 @@ insert into ngo_settings (
   'Flood relief fundraising and volunteer mobilisation; health; education; nutrition; environment. Programme details beyond this flood-relief appeal will be published as they are confirmed.',
   '132, A-2 Block, First Floor, Main Market, Rajouri Garden, New Delhi, Delhi 110027, India',
   '+91 85956 12015',
-  'navizindagifoundation@gmail.com',
+  'navizindagidelhi@gmail.com',
   '+91 85956 12015',
   'https://www.facebook.com/navizindagifoundation/',
   '',

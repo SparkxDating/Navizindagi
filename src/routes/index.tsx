@@ -7,7 +7,6 @@ import { Section } from "@/components/section";
 import { TrustBar } from "@/components/trust-bar";
 import { UpdateCard } from "@/components/update-card";
 import { Button } from "@/components/ui/button";
-import { StatTile } from "@/components/stat-tile";
 import { APP_DESCRIPTION, APP_TITLE, RELIEF_CATEGORIES, SITE_URL, displayTagline } from "@/lib/site";
 import { getPublicSite } from "@/lib/server/site";
 import { Prose } from "@/components/prose";
@@ -46,39 +45,43 @@ function HomePage() {
           className="absolute inset-0 size-full object-cover opacity-40"
         />
         <div className="absolute inset-0 bg-navy/70" />
-        <div className="relative mx-auto max-w-6xl px-4 py-16 sm:px-6 sm:py-24 lg:py-28">
+        <div className="relative mx-auto max-w-6xl px-4 py-14 sm:px-6 sm:py-24 lg:py-28">
           <div className="reveal max-w-2xl">
             <p className="text-xs font-semibold uppercase tracking-[0.2em] text-teal-soft">
               {displayTagline(settings.tagline)}
             </p>
-            <h1 className="mt-4 font-display text-4xl text-cream sm:text-5xl lg:text-6xl">
-              Help communities affected by flooding in Nepal and Assam
+            <h1 className="mt-4 font-display text-cream">
+              Help families affected by floods rebuild with dignity
             </h1>
-            <p className="mt-5 text-base leading-relaxed text-cream/85 sm:text-lg">
-              {settings.mission ||
-                "Your support can help provide essential relief such as food, clean water, hygiene supplies, medical assistance and temporary shelter."}
+            <p className="mt-5 max-w-xl text-base leading-relaxed text-cream/90 sm:text-lg">
+              Your support helps provide food, clean water, hygiene supplies, medical assistance and
+              temporary shelter for communities in Nepal and Assam.
             </p>
             <div className="mt-8 flex flex-col gap-3 sm:flex-row">
-              <Button asChild size="lg">
+              <Button asChild size="lg" className="min-h-12">
                 <Link to="/donate" search={{ campaign: undefined }}>
                   Donate Now
                 </Link>
               </Button>
-              <Button asChild size="lg" variant="cream">
+              <Button asChild size="lg" variant="cream" className="min-h-12">
                 <Link to="/volunteer">Become a Volunteer</Link>
               </Button>
             </div>
+            <p className="mt-5 text-sm text-cream/75">
+              Registered Indian NGO
+              {settings.registrationCin ? ` · CIN ${settings.registrationCin}` : ""}. Donations are
+              marked successful only after payment verification.
+            </p>
           </div>
         </div>
       </section>
 
-      <TrustBar settings={settings} />
-
       <Section
         id="campaigns"
-        eyebrow="Active campaigns"
+        tone="cream"
+        eyebrow="Current emergency"
         title="Nepal and Assam flood relief"
-        lead="Choose a campaign to see its published situation notes, fundraising figures and relief priorities. Figures stay at “Updates coming soon” until the Foundation records them."
+        lead="Choose a campaign to see its published situation notes and fundraising figures. Amounts appear only when the Foundation has recorded them."
       >
         <div className="grid gap-6 md:grid-cols-2">
           {shown.map((campaign) => (
@@ -92,24 +95,13 @@ function HomePage() {
         </div>
       </Section>
 
-      <Section
-        tone="cream"
-        eyebrow="Our impact"
-        title="Verified outcomes, when they are ready"
-        lead="This section does not display estimates. When field reports are confirmed they will replace the placeholders."
-      >
-        <div className="grid gap-4 sm:grid-cols-3">
-          <StatTile label="Families reached" value="Updates coming soon" />
-          <StatTile label="Relief kits" value="Updates coming soon" />
-          <StatTile label="Communities supported" value="Updates coming soon" />
-        </div>
-      </Section>
+      <TrustBar settings={settings} />
 
       <Section
         id="what-we-do"
-        eyebrow="What we do"
-        title="Where gifts can go"
-        lead="Funds raised through this appeal are intended for emergency relief in the categories below. Exact allocation is published on the Transparency page as reports become available."
+        eyebrow="What your donation does"
+        title="Your contribution helps support emergency relief and recovery efforts"
+        lead="Funds raised through this appeal are intended for the relief categories below. Exact allocation is published on the Transparency page as reports become available."
       >
         <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
           {RELIEF_CATEGORIES.map((item) => (

@@ -46,8 +46,8 @@ function DonatePage() {
         image="/hero-banner.jpg"
         imageAlt="Humanitarian flood relief"
       />
-      <div className="mx-auto grid max-w-6xl gap-8 px-4 py-10 sm:px-6 lg:grid-cols-[1.15fr_0.85fr] lg:gap-10 lg:py-14">
-        <div className="rounded-2xl bg-card p-5 shadow-card sm:p-8">
+      <div className="mx-auto grid max-w-6xl gap-6 px-4 py-8 sm:px-6 sm:py-12 lg:grid-cols-[1.15fr_0.85fr] lg:gap-10 lg:py-14">
+        <div className="rounded-2xl bg-card p-4 shadow-card sm:p-8">
           <DonationForm
             campaigns={site.campaigns.filter((item) => item.isActive)}
             payment={payment}

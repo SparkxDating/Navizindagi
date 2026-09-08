@@ -299,7 +299,7 @@ export function DonationForm({
         <fieldset className="space-y-3">
           <legend className="font-display text-2xl text-navy">Donation amount</legend>
           <p className="text-sm text-muted-foreground">Supporting {selected?.title ?? "flood relief"}</p>
-          <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
             {PRESET_AMOUNTS.map((preset) => (
               <button
                 key={preset}
@@ -318,8 +318,23 @@ export function DonationForm({
                 {formatINR(preset)}
               </button>
             ))}
+            <button
+              type="button"
+              onClick={() => {
+                setUsingCustom(true);
+                document.getElementById("custom-amount")?.focus();
+              }}
+              className={cn(
+                "min-h-14 rounded-2xl border px-3 text-sm font-semibold transition-colors sm:col-span-1",
+                usingCustom
+                  ? "border-teal bg-teal text-primary-foreground shadow-card"
+                  : "border-border bg-cream text-navy hover:bg-muted",
+              )}
+            >
+              Custom Amount
+            </button>
           </div>
-          <Field label="Custom amount (INR)" htmlFor="custom-amount" error={usingCustom ? amountError : undefined}>
+          <Field label="Custom Amount" htmlFor="custom-amount" error={usingCustom ? amountError : undefined}>
             <Input
               id="custom-amount"
               inputMode="numeric"

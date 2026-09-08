@@ -51,9 +51,9 @@ export function Navbar({ orgName, tagline }: { orgName?: string; tagline?: strin
         </nav>
 
         <div className="flex shrink-0 items-center gap-2">
-          <Button asChild size="sm" className="min-h-10 px-4 sm:min-h-11 sm:px-5">
+          <Button asChild size="sm" className="min-h-11 px-4 sm:min-h-11 sm:px-5">
             <Link to="/donate" search={{ campaign: undefined }} onClick={() => setOpen(false)}>
-              Donate
+              Donate Now
             </Link>
           </Button>
           <button

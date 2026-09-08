@@ -25,7 +25,7 @@ export function Section({
     navy: "bg-navy text-cream",
   } as const;
   return (
-    <section id={id} className={cn("px-4 py-16 sm:px-6 sm:py-20 lg:py-24", tones[tone], className)}>
+    <section id={id} className={cn("px-4 py-12 sm:px-6 sm:py-16 lg:py-20", tones[tone], className)}>
       <div className="mx-auto w-full max-w-6xl">
         {(eyebrow || title || lead) && (
           <header className="mx-auto mb-10 max-w-3xl text-center sm:mb-14">
@@ -81,7 +81,7 @@ export function PageHero({
   imageAlt?: string;
 }) {
   return (
-    <section className="relative overflow-hidden bg-navy px-4 py-16 sm:px-6 sm:py-20">
+    <section className="relative overflow-hidden bg-navy px-4 py-12 sm:px-6 sm:py-20">
       {image ? (
         <img
           src={image}
@@ -94,7 +94,7 @@ export function PageHero({
         {eyebrow ? (
           <p className="mb-3 text-xs font-semibold uppercase tracking-[0.18em] text-teal-soft">{eyebrow}</p>
         ) : null}
-        <h1 className="font-display text-4xl text-cream sm:text-5xl">{title}</h1>
+        <h1 className="font-display text-3xl text-cream sm:text-5xl">{title}</h1>
         {lead ? <p className="mt-4 text-base leading-relaxed text-cream/80 sm:text-lg">{lead}</p> : null}
       </div>
     </section>

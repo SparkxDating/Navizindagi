@@ -25,7 +25,7 @@ export function CampaignCard({
           <img
             src={campaign.heroImageUrl}
             alt={`${campaign.title} in ${campaign.locationLabel}`}
-            className="size-full object-cover transition-transform duration-500 ease-out hover:scale-[1.03]"
+            className="size-full object-cover transition-transform duration-500 ease-out motion-safe:hover:scale-[1.03]"
             loading="lazy"
           />
         ) : null}
@@ -42,39 +42,42 @@ export function CampaignCard({
           <p className="text-sm leading-relaxed text-muted-foreground">{campaign.shortDescription}</p>
         </div>
         <div className="mt-auto space-y-3">
+          <div className="flex items-end justify-between gap-3 text-sm">
+            {campaign.amountRaised > 0 ? (
+              <p>
+                <span className="block text-xs uppercase tracking-wide text-muted-foreground">Raised</span>
+                <span className="font-semibold tabular-nums text-navy">{formatINR(campaign.amountRaised)}</span>
+              </p>
+            ) : (
+              <p>
+                <span className="block text-xs uppercase tracking-wide text-muted-foreground">Raised</span>
+                <span className="text-sm text-muted-foreground">To be updated</span>
+              </p>
+            )}
+            <p className="text-right">
+              <span className="block text-xs uppercase tracking-wide text-muted-foreground">Target</span>
+              <span className="font-semibold tabular-nums text-navy">
+                {campaign.targetAmount > 0 ? formatINR(campaign.targetAmount) : "To be updated"}
+              </span>
+            </p>
+          </div>
           {hasFigures ? (
             <>
-              <div className="flex items-end justify-between gap-3 text-sm">
-                <p>
-                  <span className="block text-xs uppercase tracking-wide text-muted-foreground">Raised</span>
-                  <span className="font-semibold tabular-nums text-navy">{formatINR(campaign.amountRaised)}</span>
-                </p>
-                <p className="text-right">
-                  <span className="block text-xs uppercase tracking-wide text-muted-foreground">Target</span>
-                  <span className="font-semibold tabular-nums text-navy">
-                    {campaign.targetAmount > 0 ? formatINR(campaign.targetAmount) : "To be updated"}
-                  </span>
-                </p>
-              </div>
               <ProgressBar raised={campaign.amountRaised} target={campaign.targetAmount} />
-              <p className="text-xs text-muted-foreground">
-                {campaign.donorCount > 0
-                  ? `${campaign.donorCount} verified donation${campaign.donorCount === 1 ? "" : "s"}`
-                  : "Donor count: Updates coming soon"}
-              </p>
+              {campaign.donorCount > 0 ? (
+                <p className="text-xs text-muted-foreground">
+                  {campaign.donorCount} verified donation{campaign.donorCount === 1 ? "" : "s"}
+                </p>
+              ) : null}
             </>
-          ) : (
-            <p className="rounded-xl bg-cream px-3 py-2 text-sm text-muted-foreground">
-              Fundraising figures: Updates coming soon
-            </p>
-          )}
+          ) : null}
           <div className="flex flex-col gap-2 sm:flex-row">
-            <Button asChild className="flex-1">
+            <Button asChild className="min-h-12 flex-1">
               <Link to="/donate" search={{ campaign: campaign.slug }}>
-                Support this campaign
+                Donate
               </Link>
             </Button>
-            <Button asChild variant="outline" className="flex-1">
+            <Button asChild variant="outline" className="min-h-12 flex-1">
               <Link to="/campaign/$slug" params={{ slug: campaign.slug }}>
                 View campaign
               </Link>

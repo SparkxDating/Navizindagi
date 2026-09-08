@@ -16,8 +16,8 @@ export function Footer({ settings }: { settings: SiteSettings | null }) {
   const org = settings?.orgName ?? APP_NAME;
   return (
     <footer className="bg-navy text-cream">
-      <div className="mx-auto grid max-w-6xl gap-10 px-4 py-14 sm:px-6 md:grid-cols-2 lg:grid-cols-4">
-        <div className="lg:col-span-1">
+      <div className="mx-auto grid max-w-6xl gap-8 px-4 py-12 sm:grid-cols-2 sm:px-6 lg:grid-cols-4 lg:gap-10 lg:py-14">
+        <div>
           <div className="flex items-center gap-3">
             <img src="/logo.jpg" alt={`${org} logo`} width={48} height={48} className="size-12 rounded-full object-cover" />
             <div>
@@ -27,30 +27,41 @@ export function Footer({ settings }: { settings: SiteSettings | null }) {
           </div>
           <p className="mt-4 max-w-sm text-sm leading-relaxed text-cream/70">
             {settings?.mission ||
-              "Fundraising and volunteer mobilisation for verified flood-relief efforts in Nepal and Assam. We publish what is confirmed, and label the rest as still to be updated."}
+              "Fundraising and volunteer mobilisation for verified flood-relief efforts in Nepal and Assam."}
           </p>
+          <p className="mt-6 text-xs font-semibold uppercase tracking-[0.16em] text-teal-soft">Contact</p>
+          <ul className="mt-3 space-y-3 text-sm text-cream/80">
+            <li className="flex gap-2">
+              <MapPin className="mt-0.5 size-4 shrink-0 text-teal-soft" aria-hidden />
+              <span>{settings?.address || "Address: To be updated"}</span>
+            </li>
+            <li className="flex gap-2">
+              <Phone className="mt-0.5 size-4 shrink-0 text-teal-soft" aria-hidden />
+              <span>{settings?.phone || "Phone: To be updated"}</span>
+            </li>
+            <li className="flex gap-2">
+              <Mail className="mt-0.5 size-4 shrink-0 text-teal-soft" aria-hidden />
+              {settings?.email ? (
+                <a className="break-all hover:text-cream" href={`mailto:${settings.email}`}>
+                  {settings.email}
+                </a>
+              ) : (
+                <span>Email: To be updated</span>
+              )}
+            </li>
+          </ul>
         </div>
         <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-teal-soft">Explore</p>
+          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-teal-soft">About</p>
           <ul className="mt-3 space-y-2 text-sm">
             <li>
               <Link to="/about" className="text-cream/80 hover:text-cream">
-                About
+                Our story
               </Link>
             </li>
             <li>
               <Link to="/about" hash="what-we-do" className="text-cream/80 hover:text-cream">
-                Our work
-              </Link>
-            </li>
-            <li>
-              <Link to="/campaigns" className="text-cream/80 hover:text-cream">
-                Campaigns
-              </Link>
-            </li>
-            <li>
-              <Link to="/volunteer" className="text-cream/80 hover:text-cream">
-                Volunteer
+                What we do
               </Link>
             </li>
             <li>
@@ -59,19 +70,12 @@ export function Footer({ settings }: { settings: SiteSettings | null }) {
               </Link>
             </li>
             <li>
-              <Link to="/donate" search={{ campaign: undefined }} className="text-cream/80 hover:text-cream">
-                Donate
-              </Link>
-            </li>
-            <li>
               <Link to="/contact" className="text-cream/80 hover:text-cream">
                 Contact
               </Link>
             </li>
           </ul>
-        </div>
-        <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-teal-soft">Campaigns</p>
+          <p className="mt-6 text-xs font-semibold uppercase tracking-[0.16em] text-teal-soft">Campaigns</p>
           <ul className="mt-3 space-y-2 text-sm">
             <li>
               <Link to="/campaign/$slug" params={{ slug: "nepal-flood-relief" }} className="text-cream/80 hover:text-cream">
@@ -89,7 +93,24 @@ export function Footer({ settings }: { settings: SiteSettings | null }) {
               </Link>
             </li>
           </ul>
-          <p className="mt-6 text-xs font-semibold uppercase tracking-[0.16em] text-teal-soft">Legal</p>
+        </div>
+        <div>
+          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-teal-soft">Get involved</p>
+          <ul className="mt-3 space-y-2 text-sm">
+            <li>
+              <Link to="/donate" search={{ campaign: undefined }} className="text-cream/80 hover:text-cream">
+                Donate
+              </Link>
+            </li>
+            <li>
+              <Link to="/volunteer" className="text-cream/80 hover:text-cream">
+                Volunteer
+              </Link>
+            </li>
+          </ul>
+        </div>
+        <div>
+          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-teal-soft">Legal</p>
           <ul className="mt-3 space-y-2 text-sm">
             <li>
               <Link to="/privacy" className="text-cream/80 hover:text-cream">
@@ -115,29 +136,6 @@ export function Footer({ settings }: { settings: SiteSettings | null }) {
               <Link to="/login" className="text-cream/80 hover:text-cream">
                 Admin
               </Link>
-            </li>
-          </ul>
-        </div>
-        <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-teal-soft">Contact</p>
-          <ul className="mt-3 space-y-3 text-sm text-cream/80">
-            <li className="flex gap-2">
-              <MapPin className="mt-0.5 size-4 shrink-0 text-teal-soft" aria-hidden />
-              <span>{settings?.address || "Address: To be updated"}</span>
-            </li>
-            <li className="flex gap-2">
-              <Phone className="mt-0.5 size-4 shrink-0 text-teal-soft" aria-hidden />
-              <span>{settings?.phone || "Phone: To be updated"}</span>
-            </li>
-            <li className="flex gap-2">
-              <Mail className="mt-0.5 size-4 shrink-0 text-teal-soft" aria-hidden />
-              {settings?.email ? (
-                <a className="hover:text-cream" href={`mailto:${settings.email}`}>
-                  {settings.email}
-                </a>
-              ) : (
-                <span>Email: To be updated</span>
-              )}
             </li>
           </ul>
         </div>

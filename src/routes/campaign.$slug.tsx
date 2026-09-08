@@ -77,7 +77,7 @@ function CampaignPage() {
         <div className="absolute inset-0 bg-navy/75" />
         <div className="relative mx-auto max-w-6xl px-4 py-16 sm:px-6 sm:py-24">
           <p className="text-xs font-semibold uppercase tracking-[0.18em] text-teal-soft">{campaign.locationLabel}</p>
-          <h1 className="mt-3 max-w-3xl font-display text-4xl text-cream sm:text-5xl">{campaign.title}</h1>
+          <h1 className="mt-3 max-w-3xl font-display text-3xl text-cream sm:text-5xl">{campaign.title}</h1>
           <p className="mt-4 max-w-2xl text-base text-cream/85">{campaign.shortDescription}</p>
           <div className="mt-5 flex flex-wrap items-center gap-3 text-sm text-cream/80">
             <span className="rounded-full bg-teal px-3 py-1 text-xs font-semibold text-primary-foreground">

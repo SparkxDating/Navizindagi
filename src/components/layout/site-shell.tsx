@@ -30,7 +30,7 @@ export function SiteShell({
 
       {!hideSticky ? (
         <div className="fixed inset-x-0 bottom-0 z-30 border-t border-border bg-paper/95 p-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] backdrop-blur sm:hidden">
-          <Button asChild className="w-full">
+          <Button asChild className="w-full min-h-12">
             <Link to="/donate" search={{ campaign: undefined }}>
               <HeartHandshake className="size-4" />
               Donate Now

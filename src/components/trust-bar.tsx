@@ -5,19 +5,27 @@ export function TrustBar({ settings }: { settings: SiteSettings }) {
   const items = [
     {
       icon: Building2,
-      label: "Registered NGO",
+      label: "Organisation",
       value: settings.orgName,
     },
-    {
-      icon: ShieldCheck,
-      label: "CIN",
-      value: settings.registrationCin || "To be updated",
-    },
-    {
-      icon: MapPin,
-      label: "Registered office",
-      value: settings.address || "To be updated",
-    },
+    ...(settings.registrationCin
+      ? [
+          {
+            icon: ShieldCheck,
+            label: "CIN",
+            value: settings.registrationCin,
+          },
+        ]
+      : []),
+    ...(settings.address
+      ? [
+          {
+            icon: MapPin,
+            label: "Office",
+            value: settings.address,
+          },
+        ]
+      : []),
   ];
 
   return (

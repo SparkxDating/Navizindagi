@@ -59,8 +59,12 @@ test("an explicit process-env override wins over the file", () => {
   assert.equal(merged.PATH, "/usr/bin");
 });
 
-test("the template ships auth off", () => {
-  assert.deepEqual(readAppEnv(projectRoot()), { VITE_AUTH_ENABLED: "false" });
+test("the committed workspace does not load secrets from app-env.json", () => {
+  const env = readAppEnv(projectRoot());
+  assert.equal(Object.prototype.hasOwnProperty.call(env, "DATABASE_URL"), false);
+  assert.equal(Object.prototype.hasOwnProperty.call(env, "RAZORPAY_KEY_SECRET"), false);
+  assert.equal(Object.prototype.hasOwnProperty.call(env, "RAZORPAY_WEBHOOK_SECRET"), false);
+  assert.equal(Object.prototype.hasOwnProperty.call(env, "BETTER_AUTH_SECRET"), false);
 });
 
 test("vite loadEnv resolves the wrapped value", () => {
@@ -74,12 +78,11 @@ test("vite loadEnv resolves the wrapped value", () => {
 });
 
 test("the wrapped command runs with the app env applied", async () => {
-  const { stdout } = await execFileAsync(process.execPath, [
-    WRAPPER,
+  const { stdout } = await execFileAsync(
     process.execPath,
-    "-e",
-    PRINT_FLAG,
-  ]);
+    [WRAPPER, process.execPath, "-e", PRINT_FLAG],
+    { env: { ...process.env, VITE_AUTH_ENABLED: "false" } },
+  );
   assert.equal(stdout, "false");
 });
 
@@ -118,11 +121,10 @@ test("the CLI still runs when invoked through a symlinked path", async () => {
   // turns the wrapper into a no-op that exits 0 without starting anything.
   const link = join(mkdtempSync(join(tmpdir(), "app-env-link-")), "scripts");
   symlinkSync(join(projectRoot(), "scripts"), link);
-  const { stdout } = await execFileAsync(process.execPath, [
-    join(link, "with-app-env.mjs"),
+  const { stdout } = await execFileAsync(
     process.execPath,
-    "-e",
-    PRINT_FLAG,
-  ]);
+    [join(link, "with-app-env.mjs"), process.execPath, "-e", PRINT_FLAG],
+    { env: { ...process.env, VITE_AUTH_ENABLED: "false" } },
+  );
   assert.equal(stdout, "false");
 });

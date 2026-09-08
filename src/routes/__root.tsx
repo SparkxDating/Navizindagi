@@ -23,7 +23,7 @@ const jsonLd = {
   name: APP_NAME,
   slogan: APP_TAGLINE,
   description: APP_DESCRIPTION,
-  url: "https://navizindagi.org",
+  url: SITE_URL,
   logo: "/logo.jpg",
 };
 

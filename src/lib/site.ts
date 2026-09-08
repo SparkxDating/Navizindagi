@@ -3,7 +3,7 @@ export const APP_TAGLINE = "Empower • Elevate • Transform";
 export const APP_TITLE = "Navi Zindagi Foundation | सेवा, राहत और सामाजिक कल्याण";
 export const APP_DESCRIPTION =
   "Navi Zindagi Foundation works through humanitarian relief, education support, Gau Seva, food distribution and community welfare initiatives.";
-export const SITE_URL = "https://navizindagi.org";
+export const SITE_URL = "https://navizindagi.vercel.app";
 
 export function displayTagline(value?: string | null) {
   const raw = (value ?? "").trim() || APP_TAGLINE;

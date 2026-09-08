@@ -94,9 +94,9 @@ function HomePage() {
               </Button>
             </div>
             <p className="mt-5 text-sm text-cream/75">
-              Registered Indian NGO
-              {settings.registrationCin ? ` · CIN ${settings.registrationCin}` : ""}. Donations are
-              marked successful only after payment verification.
+              {settings.registrationCin
+                ? `CIN ${settings.registrationCin}. Donations are marked successful only after payment verification.`
+                : "Donations are marked successful only after payment verification."}
             </p>
           </div>
         </div>

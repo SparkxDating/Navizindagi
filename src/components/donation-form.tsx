@@ -246,7 +246,7 @@ export function DonationForm({
 
   return (
     <form onSubmit={(event) => void onSubmit(event)} className="space-y-8">
-      <ol className="grid grid-cols-4 gap-2 text-center text-[11px] font-semibold uppercase tracking-wide text-muted-foreground sm:text-xs">
+      <ol className="grid grid-cols-2 gap-2 text-center text-[11px] font-semibold uppercase tracking-wide text-muted-foreground sm:grid-cols-4 sm:text-xs">
         {STEPS.map((label, index) => {
           const number = index + 1;
           const active = step === number || (step === 3 && number === 4);
@@ -267,14 +267,14 @@ export function DonationForm({
 
       {step === 1 ? (
         <fieldset className="space-y-3">
-          <legend className="font-display text-xl text-navy">Choose a campaign</legend>
+          <legend className="font-display text-2xl text-navy">Choose a campaign</legend>
           <div className="grid gap-3">
             {campaigns.map((campaign) => (
               <label
                 key={campaign.slug}
                 className={cn(
-                  "flex min-h-14 cursor-pointer items-start gap-3 rounded-2xl border bg-card p-4 shadow-card transition-colors",
-                  campaignSlug === campaign.slug ? "border-teal bg-teal-soft/60" : "border-transparent",
+                  "flex min-h-14 cursor-pointer items-start gap-3 rounded-2xl border bg-cream/60 p-4 transition-colors",
+                  campaignSlug === campaign.slug ? "border-teal bg-teal-soft" : "border-border hover:bg-muted",
                 )}
               >
                 <input
@@ -297,9 +297,9 @@ export function DonationForm({
 
       {step === 2 ? (
         <fieldset className="space-y-3">
-          <legend className="font-display text-xl text-navy">Donation amount</legend>
+          <legend className="font-display text-2xl text-navy">Donation amount</legend>
           <p className="text-sm text-muted-foreground">Supporting {selected?.title ?? "flood relief"}</p>
-          <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
             {PRESET_AMOUNTS.map((preset) => (
               <button
                 key={preset}
@@ -309,10 +309,10 @@ export function DonationForm({
                   setAmount(preset);
                 }}
                 className={cn(
-                  "min-h-12 rounded-full border px-3 text-sm font-semibold tabular-nums transition-colors",
+                  "min-h-14 rounded-2xl border px-3 text-base font-semibold tabular-nums transition-colors",
                   !usingCustom && amount === preset
-                    ? "border-teal bg-teal text-primary-foreground"
-                    : "border-border bg-card text-navy hover:bg-muted",
+                    ? "border-teal bg-teal text-primary-foreground shadow-card"
+                    : "border-border bg-cream text-navy hover:bg-muted",
                 )}
               >
                 {formatINR(preset)}
@@ -437,11 +437,11 @@ export function DonationForm({
           </Button>
         ) : null}
         {step < 3 ? (
-          <Button type="button" size="lg" onClick={goNext} className="sm:ml-auto">
+          <Button type="button" size="lg" onClick={goNext} className="min-h-12 sm:ml-auto">
             Continue
           </Button>
         ) : (
-          <Button type="submit" size="lg" disabled={busy || !campaignSlug} className="sm:ml-auto">
+          <Button type="submit" size="lg" disabled={busy || !campaignSlug} className="min-h-12 sm:ml-auto">
             {busy ? "Please wait…" : `Pay securely · ${formatINR(resolvedAmount || 0)}`}
           </Button>
         )}

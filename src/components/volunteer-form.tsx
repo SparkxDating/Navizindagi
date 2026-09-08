@@ -145,7 +145,7 @@ export function VolunteerForm() {
         <Input id="vol-website" value={website} onChange={(event) => setWebsite(event.target.value)} tabIndex={-1} autoComplete="off" />
       </div>
 
-      <Button type="submit" disabled={busy}>
+      <Button type="submit" disabled={busy} className="min-h-12 w-full sm:w-auto">
         {busy ? "Sending…" : "Submit volunteer registration"}
       </Button>
     </form>

@@ -1,9 +1,18 @@
 export const APP_NAME = "Navi Zindagi Foundation";
-export const APP_TAGLINE = "Empower. Elevate. Transform.";
+export const APP_TAGLINE = "Empower • Elevate • Transform";
 export const APP_TITLE = "Navi Zindagi Foundation | Flood Relief & Donations";
 export const APP_DESCRIPTION =
   "Navi Zindagi Foundation supports verified flood-relief efforts in Nepal and Assam through donations, volunteers and transparent relief updates.";
 export const SITE_URL = "https://navizindagi.org";
+
+export function displayTagline(value?: string | null) {
+  const raw = (value ?? "").trim() || APP_TAGLINE;
+  return raw
+    .replace(/\s*[•·]\s*/g, " • ")
+    .replace(/\.\s+/g, " • ")
+    .replace(/\.$/, "")
+    .trim();
+}
 
 export const PRESET_AMOUNTS = [500, 1000, 2500, 5000] as const;
 
@@ -65,10 +74,9 @@ export const RELIEF_CATEGORIES = [
 ] as const;
 
 export const NAV_LINKS = [
-  { to: "/", label: "Home" },
-  { to: "/about", label: "About" },
   { to: "/campaigns", label: "Campaigns" },
+  { to: "/about", label: "Our Work", hash: "what-we-do" },
+  { to: "/about", label: "About" },
   { to: "/transparency", label: "Transparency" },
   { to: "/volunteer", label: "Volunteer" },
-  { to: "/contact", label: "Contact" },
 ] as const;

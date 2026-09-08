@@ -15,6 +15,7 @@ export const Route = createFileRoute("/contact")({
         name: "description",
         content: "Contact Navi Zindagi Foundation by email, phone, WhatsApp or the enquiry form.",
       },
+      { property: "og:title", content: "Contact · Navi Zindagi Foundation" },
     ],
   }),
 });
@@ -28,6 +29,8 @@ function ContactPage() {
         eyebrow="Contact"
         title="We welcome your questions"
         lead="Use the form for general enquiries. For faster contact, call or message the published numbers."
+        image="/facebook-cover.jpg"
+        imageAlt="Navi Zindagi Foundation"
       />
       <div className="mx-auto grid max-w-6xl gap-10 px-4 py-12 sm:px-6 lg:grid-cols-2">
         <div className="space-y-5">

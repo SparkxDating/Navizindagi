@@ -1,8 +1,10 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { ShieldCheck } from "lucide-react";
 import { Prose } from "@/components/prose";
 import { PageHero, Section } from "@/components/section";
 import { ProgressBar } from "@/components/ui/progress";
 import { getPublicSite } from "@/lib/server/site";
+import { SITE_URL } from "@/lib/site";
 import { formatDate, formatINR } from "@/lib/utils";
 
 export const Route = createFileRoute("/transparency")({
@@ -16,6 +18,8 @@ export const Route = createFileRoute("/transparency")({
         content:
           "How Navi Zindagi Foundation uses flood-relief donations, campaign utilisation, reports and FAQs.",
       },
+      { property: "og:title", content: "Transparency · Navi Zindagi Foundation" },
+      { property: "og:image", content: `${SITE_URL}/og.jpg` },
     ],
   }),
 });
@@ -31,9 +35,28 @@ function TransparencyPage() {
         lead="Figures and reports on this page are editable from the admin dashboard. Until a report is published, treat numbers as still to be updated."
       />
       <Section>
+        <div className="mx-auto grid max-w-5xl gap-4 sm:grid-cols-3">
+          <div className="rounded-2xl bg-card p-5 shadow-card">
+            <p className="text-xs font-semibold uppercase tracking-[0.14em] text-teal-dark">CIN</p>
+            <p className="mt-2 font-medium text-navy">{settings.registrationCin || "To be updated"}</p>
+          </div>
+          <div className="rounded-2xl bg-card p-5 shadow-card">
+            <p className="text-xs font-semibold uppercase tracking-[0.14em] text-teal-dark">Registered office</p>
+            <p className="mt-2 text-sm font-medium text-navy">{settings.address || "To be updated"}</p>
+          </div>
+          <div className="rounded-2xl bg-card p-5 shadow-card">
+            <p className="flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.14em] text-teal-dark">
+              <ShieldCheck className="size-4" />
+              80G / tax exemption
+            </p>
+            <p className="mt-2 text-sm text-muted-foreground">{settings.registrationNotes || "To be updated"}</p>
+          </div>
+        </div>
+      </Section>
+      <Section tone="cream">
         <Prose className="mx-auto max-w-3xl" text={settings.howDonationsUsed} />
       </Section>
-      <Section tone="cream" title="Campaign-wise fund utilisation">
+      <Section title="Campaign-wise fund utilisation">
         <div className="grid gap-5">
           {campaigns.map((campaign) => (
             <article key={campaign.id} className="rounded-2xl bg-card p-6 shadow-card">
@@ -51,7 +74,7 @@ function TransparencyPage() {
           ))}
         </div>
       </Section>
-      <Section title="Reports and documents">
+      <Section tone="cream" title="Reports and documents">
         {reports.length === 0 ? (
           <p className="text-center text-muted-foreground">
             Reports and documents: To be updated. Utilisation statements will be listed here when
@@ -76,10 +99,10 @@ function TransparencyPage() {
           </ul>
         )}
       </Section>
-      <Section tone="cream" title="Donation and payment information">
+      <Section title="Donation and payment information">
         <Prose className="mx-auto max-w-3xl" text={settings.paymentInfo} />
       </Section>
-      <Section title="Frequently asked questions">
+      <Section tone="cream" title="Frequently asked questions">
         <div className="mx-auto max-w-3xl space-y-3">
           {faqs.map((faq) => (
             <details key={faq.id} className="rounded-2xl bg-card p-5 shadow-card">

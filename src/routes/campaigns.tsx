@@ -15,6 +15,8 @@ export const Route = createFileRoute("/campaigns")({
         content:
           "Donate to Nepal Flood Relief, Assam Flood Relief or General Relief with Navi Zindagi Foundation.",
       },
+      { property: "og:title", content: "Campaigns · Navi Zindagi Foundation" },
+      { property: "og:image", content: `${SITE_URL}/og.jpg` },
     ],
     links: [{ rel: "canonical", href: `${SITE_URL}/campaigns` }],
   }),
@@ -30,6 +32,7 @@ function CampaignsPage() {
         title="Choose a flood-relief appeal"
         lead="Each campaign publishes its own situation notes, fundraising figures and updates. Figures stay at “Updates coming soon” until the Foundation records them."
         image="/facebook-cover.jpg"
+        imageAlt="Flood relief campaigns"
       />
       <Section>
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">

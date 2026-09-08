@@ -1,6 +1,7 @@
 import { Link } from "@tanstack/react-router";
-import { Facebook, Instagram } from "lucide-react";
+import { Facebook, Instagram, Mail, MapPin, Phone } from "lucide-react";
 import type { SiteSettings } from "@/lib/types";
+import { APP_NAME, displayTagline } from "@/lib/site";
 
 const XIcon = () => (
   <svg viewBox="0 0 24 24" className="size-4" aria-hidden>
@@ -12,29 +13,34 @@ const XIcon = () => (
 );
 
 export function Footer({ settings }: { settings: SiteSettings | null }) {
-  const org = settings?.orgName ?? "Navi Zindagi Foundation";
+  const org = settings?.orgName ?? APP_NAME;
   return (
     <footer className="bg-navy text-cream">
-      <div className="mx-auto grid max-w-6xl gap-10 px-4 py-14 sm:px-6 md:grid-cols-4">
-        <div className="md:col-span-2">
+      <div className="mx-auto grid max-w-6xl gap-10 px-4 py-14 sm:px-6 md:grid-cols-2 lg:grid-cols-4">
+        <div className="lg:col-span-1">
           <div className="flex items-center gap-3">
-            <img src="/logo.jpg" alt="" className="size-12 rounded-full object-cover" />
+            <img src="/logo.jpg" alt={`${org} logo`} width={48} height={48} className="size-12 rounded-full object-cover" />
             <div>
               <p className="font-display text-xl text-cream">{org}</p>
-              <p className="text-sm text-cream/70">{settings?.tagline ?? "Empower. Elevate. Transform."}</p>
+              <p className="text-sm text-cream/70">{displayTagline(settings?.tagline)}</p>
             </div>
           </div>
-          <p className="mt-4 max-w-md text-sm leading-relaxed text-cream/70">
-            Fundraising and volunteer mobilisation for verified flood-relief efforts in Nepal and
-            Assam. We publish what is confirmed, and label the rest as still to be updated.
+          <p className="mt-4 max-w-sm text-sm leading-relaxed text-cream/70">
+            {settings?.mission ||
+              "Fundraising and volunteer mobilisation for verified flood-relief efforts in Nepal and Assam. We publish what is confirmed, and label the rest as still to be updated."}
           </p>
         </div>
         <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-gold">Explore</p>
+          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-teal-soft">Explore</p>
           <ul className="mt-3 space-y-2 text-sm">
             <li>
               <Link to="/about" className="text-cream/80 hover:text-cream">
-                About the Foundation
+                About
+              </Link>
+            </li>
+            <li>
+              <Link to="/about" hash="what-we-do" className="text-cream/80 hover:text-cream">
+                Our work
               </Link>
             </li>
             <li>
@@ -43,13 +49,13 @@ export function Footer({ settings }: { settings: SiteSettings | null }) {
               </Link>
             </li>
             <li>
-              <Link to="/transparency" className="text-cream/80 hover:text-cream">
-                Transparency
+              <Link to="/volunteer" className="text-cream/80 hover:text-cream">
+                Volunteer
               </Link>
             </li>
             <li>
-              <Link to="/volunteer" className="text-cream/80 hover:text-cream">
-                Volunteer
+              <Link to="/transparency" className="text-cream/80 hover:text-cream">
+                Transparency
               </Link>
             </li>
             <li>
@@ -65,7 +71,25 @@ export function Footer({ settings }: { settings: SiteSettings | null }) {
           </ul>
         </div>
         <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-gold">Policies</p>
+          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-teal-soft">Campaigns</p>
+          <ul className="mt-3 space-y-2 text-sm">
+            <li>
+              <Link to="/campaign/$slug" params={{ slug: "nepal-flood-relief" }} className="text-cream/80 hover:text-cream">
+                Nepal Flood Relief
+              </Link>
+            </li>
+            <li>
+              <Link to="/campaign/$slug" params={{ slug: "assam-flood-relief" }} className="text-cream/80 hover:text-cream">
+                Assam Flood Relief
+              </Link>
+            </li>
+            <li>
+              <Link to="/campaigns" className="text-cream/80 hover:text-cream">
+                All campaigns
+              </Link>
+            </li>
+          </ul>
+          <p className="mt-6 text-xs font-semibold uppercase tracking-[0.16em] text-teal-soft">Legal</p>
           <ul className="mt-3 space-y-2 text-sm">
             <li>
               <Link to="/privacy" className="text-cream/80 hover:text-cream">
@@ -91,6 +115,29 @@ export function Footer({ settings }: { settings: SiteSettings | null }) {
               <Link to="/login" className="text-cream/80 hover:text-cream">
                 Admin
               </Link>
+            </li>
+          </ul>
+        </div>
+        <div>
+          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-teal-soft">Contact</p>
+          <ul className="mt-3 space-y-3 text-sm text-cream/80">
+            <li className="flex gap-2">
+              <MapPin className="mt-0.5 size-4 shrink-0 text-teal-soft" aria-hidden />
+              <span>{settings?.address || "Address: To be updated"}</span>
+            </li>
+            <li className="flex gap-2">
+              <Phone className="mt-0.5 size-4 shrink-0 text-teal-soft" aria-hidden />
+              <span>{settings?.phone || "Phone: To be updated"}</span>
+            </li>
+            <li className="flex gap-2">
+              <Mail className="mt-0.5 size-4 shrink-0 text-teal-soft" aria-hidden />
+              {settings?.email ? (
+                <a className="hover:text-cream" href={`mailto:${settings.email}`}>
+                  {settings.email}
+                </a>
+              ) : (
+                <span>Email: To be updated</span>
+              )}
             </li>
           </ul>
         </div>

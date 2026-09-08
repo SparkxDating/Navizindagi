@@ -18,12 +18,13 @@ export function SiteShell({
   const hideSticky =
     pathname.startsWith("/donate") ||
     pathname.startsWith("/admin") ||
+    pathname.startsWith("/campaign/") ||
     pathname === "/login";
   const whatsapp = settings?.whatsapp?.trim();
 
   return (
     <div className="flex min-h-screen flex-col">
-      <Navbar />
+      <Navbar orgName={settings?.orgName} tagline={settings?.tagline} />
       <main className="flex-1 pb-20 sm:pb-0">{children}</main>
       <Footer settings={settings} />
 

@@ -24,11 +24,12 @@ export function CampaignCard({
         {campaign.heroImageUrl ? (
           <img
             src={campaign.heroImageUrl}
-            alt=""
+            alt={`${campaign.title} in ${campaign.locationLabel}`}
             className="size-full object-cover transition-transform duration-500 ease-out hover:scale-[1.03]"
+            loading="lazy"
           />
         ) : null}
-        <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-navy-deep/80 to-transparent p-4">
+        <div className="absolute inset-x-0 bottom-0 bg-navy/70 p-4">
           <p className="inline-flex items-center gap-1.5 rounded-full bg-card/95 px-2.5 py-1 text-xs font-semibold text-navy">
             <MapPin className="size-3.5" aria-hidden />
             {campaign.locationLabel}
@@ -70,7 +71,7 @@ export function CampaignCard({
           <div className="flex flex-col gap-2 sm:flex-row">
             <Button asChild className="flex-1">
               <Link to="/donate" search={{ campaign: campaign.slug }}>
-                Donate
+                Support this campaign
               </Link>
             </Button>
             <Button asChild variant="outline" className="flex-1">

@@ -13,7 +13,7 @@ import {
 } from "./core.ts";
 import { en } from "./en.ts";
 import { hi } from "./hi.ts";
-import { hindiForEnglish, localizeDb } from "./content.ts";
+import { campaignField, hindiForEnglish, localizeDb, settingsField } from "./content.ts";
 import { displayCampaignTitle, translate } from "./messages.ts";
 import { DEFAULT_LANGUAGE, LANGUAGE_STORAGE_KEY, type NestedMessages } from "./types.ts";
 
@@ -150,6 +150,24 @@ describe("i18n language system", () => {
     assert.equal(displayCampaignTitle("hi", "nepal-flood-relief", "Nepal Flood Relief"), "नेपाल बाढ़ राहत");
     assert.equal(displayCampaignTitle("en", "nepal-flood-relief", "Nepal Flood Relief"), "Nepal Flood Relief");
     assert.equal(displayCampaignTitle("hi", "unknown-campaign", "Winter Relief"), "Winter Relief");
+  });
+
+  it("uses campaign slug overlays even when English copy differs slightly", () => {
+    assert.equal(
+      campaignField("hi", "nepal-flood-relief", "shortDescription", "Edited English description"),
+      "नेपाल में मानसून बाढ़ से प्रभावित परिवारों के लिए सत्यापित बाढ़-राहत प्रयासों का सहयोग करें।",
+    );
+    assert.equal(
+      campaignField("en", "nepal-flood-relief", "shortDescription", "Edited English description"),
+      "Edited English description",
+    );
+    assert.equal(campaignField("hi", "new-campaign", "shortDescription", "Brand new appeal"), "Brand new appeal");
+  });
+
+  it("uses foundation field overlays in Hindi and English", () => {
+    assert.match(settingsField("hi", "aboutText", "Changed about copy"), /नवी ज़िंदगी फाउंडेशन/);
+    assert.equal(settingsField("en", "aboutText", "Changed about copy"), "Changed about copy");
+    assert.match(settingsField("hi", "mission", "Edited mission"), /करुणा/);
   });
 
   it("interpolates placeholders without treating them as HTML", () => {

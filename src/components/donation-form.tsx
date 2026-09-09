@@ -9,7 +9,7 @@ import { Field } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { dateLocale, displayCampaignTitle, useLanguage, type MessageKey } from "@/lib/i18n";
+import { campaignField, dateLocale, displayCampaignTitle, useLanguage, type MessageKey } from "@/lib/i18n";
 import { PRESET_AMOUNTS } from "@/lib/site";
 import {
   completeSandboxDonation,
@@ -64,7 +64,7 @@ export function DonationForm({
   orgName: string;
 }) {
   const navigate = useNavigate();
-  const { t, language, tValue } = useLanguage();
+  const { t, language } = useLanguage();
   const locale = dateLocale(language);
   const create = useServerFn(createDonation);
   const verify = useServerFn(verifyRazorpayPayment);
@@ -294,7 +294,7 @@ export function DonationForm({
                     {displayCampaignTitle(language, campaign.slug, campaign.title)}
                   </span>
                   <span className="block text-sm text-muted-foreground">
-                    {tValue({ en: campaign.shortDescription, hi: null })}
+                    {campaignField(language, campaign.slug, "shortDescription", campaign.shortDescription)}
                   </span>
                 </span>
               </label>

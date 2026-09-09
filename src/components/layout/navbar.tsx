@@ -3,7 +3,7 @@ import { Link, useRouterState } from "@tanstack/react-router";
 import { Menu, X } from "lucide-react";
 import { LanguageSwitcher } from "@/components/language-switcher";
 import { Button } from "@/components/ui/button";
-import { localizeDb, useLanguage, type MessageKey } from "@/lib/i18n";
+import { settingsField, useLanguage, type MessageKey } from "@/lib/i18n";
 import { APP_NAME, NAV_LINKS, displayTagline } from "@/lib/site";
 import { cn } from "@/lib/utils";
 
@@ -29,7 +29,7 @@ export function Navbar({ orgName, tagline }: { orgName?: string; tagline?: strin
               {name}
             </span>
             <span className="hidden text-[11px] tracking-wide text-muted-foreground sm:block">
-              {localizeDb(language, displayTagline(tagline))}
+              {settingsField(language, "tagline", displayTagline(tagline))}
             </span>
           </span>
         </Link>

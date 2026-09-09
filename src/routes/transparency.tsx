@@ -3,7 +3,7 @@ import { ShieldCheck } from "lucide-react";
 import { Prose } from "@/components/prose";
 import { PageHero, Section } from "@/components/section";
 import { ProgressBar } from "@/components/ui/progress";
-import { dateLocale, displayCampaignTitle, useLanguage, usePageSeo } from "@/lib/i18n";
+import { campaignField, dateLocale, displayCampaignTitle, settingsField, useLanguage, usePageSeo } from "@/lib/i18n";
 import { getPublicSite } from "@/lib/server/site";
 import { SITE_URL } from "@/lib/site";
 import { formatDate, formatINR } from "@/lib/utils";
@@ -55,13 +55,13 @@ function TransparencyPage() {
               {t("transparency.tax")}
             </p>
             <p className="mt-2 text-sm text-muted-foreground">
-              {tValue({ en: settings.registrationNotes, hi: null }) || fallback}
+              {settingsField(language, "registrationNotes", settings.registrationNotes) || fallback}
             </p>
           </div>
         </div>
       </Section>
       <Section tone="cream">
-        <Prose className="mx-auto max-w-3xl" text={tValue({ en: settings.howDonationsUsed, hi: null })} />
+        <Prose className="mx-auto max-w-3xl" text={settingsField(language, "howDonationsUsed", settings.howDonationsUsed)} />
       </Section>
       <Section title={t("transparency.utilisation")}>
         <div className="grid gap-5">
@@ -79,7 +79,7 @@ function TransparencyPage() {
               </div>
               <ProgressBar className="mt-4" raised={campaign.amountRaised} target={campaign.targetAmount} />
               <p className="mt-4 text-sm text-muted-foreground">
-                {tValue({ en: campaign.utilisationNotes, hi: null })}
+                {campaignField(language, campaign.slug, "utilisationNotes", campaign.utilisationNotes)}
               </p>
             </article>
           ))}
@@ -108,7 +108,7 @@ function TransparencyPage() {
         )}
       </Section>
       <Section title={t("transparency.payment")}>
-        <Prose className="mx-auto max-w-3xl" text={tValue({ en: settings.paymentInfo, hi: null })} />
+        <Prose className="mx-auto max-w-3xl" text={settingsField(language, "paymentInfo", settings.paymentInfo)} />
       </Section>
       <Section tone="cream" title={t("transparency.faq")}>
         <div className="mx-auto max-w-3xl space-y-3">

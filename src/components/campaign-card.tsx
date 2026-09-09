@@ -2,7 +2,7 @@ import { Link } from "@tanstack/react-router";
 import { MapPin } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ProgressBar } from "@/components/ui/progress";
-import { dateLocale, displayCampaignTitle, localizeDb, useLanguage } from "@/lib/i18n";
+import { campaignField, dateLocale, displayCampaignTitle, useLanguage } from "@/lib/i18n";
 import type { Campaign } from "@/lib/types";
 import { cn, formatINR } from "@/lib/utils";
 
@@ -13,10 +13,10 @@ export function CampaignCard({
   campaign: Campaign;
   className?: string;
 }) {
-  const { t, language, tValue } = useLanguage();
+  const { t, language } = useLanguage();
   const title = displayCampaignTitle(language, campaign.slug, campaign.title);
-  const description = tValue({ en: campaign.shortDescription, hi: null });
-  const location = localizeDb(language, campaign.locationLabel);
+  const description = campaignField(language, campaign.slug, "shortDescription", campaign.shortDescription);
+  const location = campaignField(language, campaign.slug, "locationLabel", campaign.locationLabel);
   const hasFigures = campaign.targetAmount > 0 || campaign.amountRaised > 0;
   const locale = dateLocale(language);
   return (

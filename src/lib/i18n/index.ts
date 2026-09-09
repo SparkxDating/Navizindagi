@@ -15,7 +15,13 @@ export {
   tValue as resolveLocalizedValue,
   writeStoredLanguage,
 } from "./core.ts";
-export { hindiForEnglish, localizeDb, localizeDbList } from "./content.ts";
+export {
+  campaignField,
+  hindiForEnglish,
+  localizeDb,
+  localizeDbList,
+  settingsField,
+} from "./content.ts";
 export {
   dateLocale,
   displayCampaignTitle,

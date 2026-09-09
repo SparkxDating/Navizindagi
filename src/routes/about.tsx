@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { MapPin } from "lucide-react";
 import { BulletList, Prose } from "@/components/prose";
 import { PageHero, Section } from "@/components/section";
-import { localizeDb, useLanguage, usePageSeo } from "@/lib/i18n";
+import { settingsField, useLanguage, usePageSeo } from "@/lib/i18n";
 import { getPublicSite } from "@/lib/server/site";
 import { SITE_URL, displayTagline } from "@/lib/site";
 
@@ -34,32 +34,32 @@ function AboutPage() {
       <PageHero
         eyebrow={t("about.eyebrow")}
         title={settings.orgName}
-        lead={localizeDb(language, displayTagline(settings.tagline))}
+        lead={settingsField(language, "tagline", displayTagline(settings.tagline))}
         image="/facebook-cover.jpg"
         imageAlt={t("nav.logoAlt")}
       />
       <Section title={t("about.story")}>
-        <Prose text={tValue({ en: settings.aboutText, hi: null })} className="mx-auto max-w-3xl" />
+        <Prose text={settingsField(language, "aboutText", settings.aboutText)} className="mx-auto max-w-3xl" />
       </Section>
       <Section tone="cream" title={t("about.mvv")}>
         <div className="grid gap-6 md:grid-cols-3">
           <article className="rounded-2xl bg-card p-6 shadow-card">
             <h3 className="font-display text-xl text-navy">{t("about.mission")}</h3>
-            <Prose className="mt-3 text-sm" text={tValue({ en: settings.mission, hi: null }) || fallback} />
+            <Prose className="mt-3 text-sm" text={settingsField(language, "mission", settings.mission) || fallback} />
           </article>
           <article className="rounded-2xl bg-card p-6 shadow-card">
             <h3 className="font-display text-xl text-navy">{t("about.vision")}</h3>
-            <Prose className="mt-3 text-sm" text={tValue({ en: settings.vision, hi: null }) || fallback} />
+            <Prose className="mt-3 text-sm" text={settingsField(language, "vision", settings.vision) || fallback} />
           </article>
           <article className="rounded-2xl bg-card p-6 shadow-card">
             <h3 className="font-display text-xl text-navy">{t("about.values")}</h3>
-            <BulletList className="mt-3 text-sm" text={tValue({ en: settings.valuesText, hi: null }) || fallback} />
+            <BulletList className="mt-3 text-sm" text={settingsField(language, "valuesText", settings.valuesText) || fallback} />
           </article>
         </div>
       </Section>
       <Section id="what-we-do" title={t("about.whatWeDo")}>
         <div className="mx-auto max-w-3xl">
-          <BulletList text={tValue({ en: settings.areasOfWork, hi: null }) || fallback} />
+          <BulletList text={settingsField(language, "areasOfWork", settings.areasOfWork) || fallback} />
         </div>
       </Section>
       <Section tone="cream" title={t("about.where")}>
@@ -121,7 +121,7 @@ function AboutPage() {
           </div>
           <div>
             <dt className="text-muted-foreground">{t("about.notes")}</dt>
-            <dd className="text-muted-foreground">{tValue({ en: settings.registrationNotes, hi: null }) || fallback}</dd>
+            <dd className="text-muted-foreground">{settingsField(language, "registrationNotes", settings.registrationNotes) || fallback}</dd>
           </div>
         </dl>
       </Section>

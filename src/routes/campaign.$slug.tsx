@@ -6,7 +6,7 @@ import { UpdateCard } from "@/components/update-card";
 import { Button } from "@/components/ui/button";
 import { ProgressBar } from "@/components/ui/progress";
 import { StatTile } from "@/components/stat-tile";
-import { dateLocale, displayCampaignTitle, localizeDb, useLanguage, usePageSeo } from "@/lib/i18n";
+import { campaignField, dateLocale, displayCampaignTitle, localizeDb, settingsField, useLanguage, usePageSeo } from "@/lib/i18n";
 import { getCampaignPage } from "@/lib/server/site";
 import { RELIEF_CATEGORIES, SITE_URL } from "@/lib/site";
 import { formatDate, formatINR } from "@/lib/utils";
@@ -44,11 +44,15 @@ export const Route = createFileRoute("/campaign/$slug")({
 
 function CampaignPage() {
   const { campaign, updates, campaigns, settings } = Route.useLoaderData();
-  const { t, language, tValue } = useLanguage();
+  const { t, language } = useLanguage();
   const locale = dateLocale(language);
   const title = campaign ? displayCampaignTitle(language, campaign.slug, campaign.title) : "";
-  const description = campaign ? tValue({ en: campaign.shortDescription, hi: null }) : "";
-  const location = campaign ? localizeDb(language, campaign.locationLabel) : "";
+  const description = campaign
+    ? campaignField(language, campaign.slug, "shortDescription", campaign.shortDescription)
+    : "";
+  const location = campaign
+    ? campaignField(language, campaign.slug, "locationLabel", campaign.locationLabel)
+    : "";
   usePageSeo(title ? `${title} · Navi Zindagi Foundation` : t("seo.campaignsTitle"), description);
   if (!campaign) return null;
   const others = campaigns.filter((item) => item.id !== campaign.id && item.slug !== "general-relief");
@@ -107,11 +111,17 @@ function CampaignPage() {
         <div className="space-y-12">
           <section>
             <h2 className="font-display text-2xl text-navy">{t("campaign.situation")}</h2>
-            <Prose className="mt-4" text={tValue({ en: campaign.situationText, hi: null })} />
+            <Prose
+              className="mt-4"
+              text={campaignField(language, campaign.slug, "situationText", campaign.situationText)}
+            />
           </section>
           <section>
             <h2 className="font-display text-2xl text-navy">{t("campaign.response")}</h2>
-            <Prose className="mt-4" text={tValue({ en: campaign.missionText, hi: null })} />
+            <Prose
+              className="mt-4"
+              text={campaignField(language, campaign.slug, "missionText", campaign.missionText)}
+            />
             <ul className="mt-6 space-y-2 text-muted-foreground">
               {campaign.reliefPriorities.length === 0 ? (
                 <li>{fallback}</li>
@@ -182,9 +192,12 @@ function CampaignPage() {
           ) : null}
           <section>
             <h2 className="font-display text-2xl text-navy">{t("campaign.transparency")}</h2>
-            <BulletList className="mt-4 text-sm" text={tValue({ en: campaign.utilisationNotes, hi: null })} />
+            <BulletList
+              className="mt-4 text-sm"
+              text={campaignField(language, campaign.slug, "utilisationNotes", campaign.utilisationNotes)}
+            />
             <p className="mt-4 text-sm text-muted-foreground">
-              {t("campaign.orgNotes")}: {tValue({ en: settings.registrationNotes, hi: null }) || fallback}
+              {t("campaign.orgNotes")}: {settingsField(language, "registrationNotes", settings.registrationNotes) || fallback}
             </p>
             <Button asChild variant="outline" className="mt-4">
               <Link to="/transparency">{t("campaign.viewOrgTransparency")}</Link>

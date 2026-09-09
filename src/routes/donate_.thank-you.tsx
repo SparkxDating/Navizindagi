@@ -1,7 +1,7 @@
 import { Link, createFileRoute } from "@tanstack/react-router";
 import { Download, Printer, Share2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { dateLocale, displayCampaignTitle, localizeDb, useLanguage, usePageSeo } from "@/lib/i18n";
+import { dateLocale, displayCampaignTitle, settingsField, useLanguage, usePageSeo } from "@/lib/i18n";
 import { getDonationReceipt } from "@/lib/server/site";
 import { APP_NAME, SITE_URL, displayTagline } from "@/lib/site";
 import { downloadTextFile, formatDate, formatINR } from "@/lib/utils";
@@ -90,7 +90,7 @@ function ThankYouPage() {
           <div>
             <p className="font-display text-xl text-navy">{settings?.orgName}</p>
             <p className="text-sm text-muted-foreground">
-              {settings?.tagline ? localizeDb(language, displayTagline(settings.tagline)) : ""}
+              {settings?.tagline ? settingsField(language, "tagline", displayTagline(settings.tagline)) : ""}
             </p>
           </div>
         </div>

@@ -15,7 +15,7 @@ import { Section } from "@/components/section";
 import { TrustBar } from "@/components/trust-bar";
 import { UpdateCard } from "@/components/update-card";
 import { Button } from "@/components/ui/button";
-import { settingsField, useLanguage, usePageSeo, type MessageKey } from "@/lib/i18n";
+import { useLanguage, usePageSeo, type MessageKey } from "@/lib/i18n";
 import {
   ACTIVITY_PREVIEWS,
   APP_DESCRIPTION,
@@ -55,7 +55,7 @@ const WORK_ICONS: Record<string, ReactNode> = {
 
 function HomePage() {
   const { settings, campaigns, updates } = Route.useLoaderData();
-  const { t, language } = useLanguage();
+  const { t, tValue } = useLanguage();
   usePageSeo(t("seo.homeTitle"), t("seo.homeDescription"));
   const nepal = campaigns.find((campaign) => campaign.slug === "nepal-flood-relief");
   const assam = campaigns.find((campaign) => campaign.slug === "assam-flood-relief");
@@ -77,7 +77,7 @@ function HomePage() {
         <div className="relative mx-auto max-w-6xl px-4 py-14 sm:px-6 sm:py-24 lg:py-28">
           <div className="reveal max-w-3xl">
             <p className="text-xs font-semibold uppercase tracking-[0.2em] text-teal-soft">
-              {settingsField(language, "tagline", displayTagline(settings.tagline))}
+              {tValue({ en: displayTagline(settings.tagline), hi: settings.taglineHi })}
             </p>
             <h1 className="mt-4 font-display text-cream">{t("home.heroTitle")}</h1>
             <p className="mt-5 max-w-2xl text-base leading-relaxed text-cream/90 sm:text-lg">
@@ -112,7 +112,7 @@ function HomePage() {
       >
         <div className="mx-auto max-w-3xl rounded-2xl bg-card p-6 text-center shadow-card sm:p-8">
           <p className="text-base leading-relaxed text-muted-foreground">
-            {settingsField(language, "aboutText", settings.aboutText)}
+            {tValue({ en: settings.aboutText, hi: settings.aboutTextHi })}
           </p>
           <Button asChild className="mt-6">
             <Link to="/about">{t("home.knowMore")}</Link>

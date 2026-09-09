@@ -2,11 +2,17 @@ export type SiteSettings = {
   id: number;
   orgName: string;
   tagline: string;
+  taglineHi: string;
   aboutText: string;
+  aboutTextHi: string;
   mission: string;
+  missionHi: string;
   vision: string;
+  visionHi: string;
   valuesText: string;
+  valuesTextHi: string;
   areasOfWork: string;
+  areasOfWorkHi: string;
   address: string;
   phone: string;
   email: string;
@@ -17,8 +23,11 @@ export type SiteSettings = {
   mapsEmbedUrl: string;
   registrationCin: string;
   registrationNotes: string;
+  registrationNotesHi: string;
   howDonationsUsed: string;
+  howDonationsUsedHi: string;
   paymentInfo: string;
+  paymentInfoHi: string;
   updatedAt: string;
 };
 
@@ -34,14 +43,20 @@ export type Campaign = {
   id: number;
   slug: string;
   title: string;
+  titleHi: string;
   locationLabel: string;
   countryCode: string;
   heroImageUrl: string;
   shortDescription: string;
+  shortDescriptionHi: string;
   situationText: string;
+  situationTextHi: string;
   missionText: string;
+  missionTextHi: string;
   reliefPriorities: string[];
+  reliefPrioritiesHi: string[];
   utilisationNotes: string;
+  utilisationNotesHi: string;
   targetAmount: number;
   manualAmountRaised: number;
   manualDonorCount: number;
@@ -68,9 +83,12 @@ export type CampaignUpdate = {
   id: number;
   campaignId: number;
   campaignTitle?: string;
+  campaignTitleHi?: string;
   campaignSlug?: string;
   title: string;
+  titleHi: string;
   body: string;
+  bodyHi: string;
   publishedAt: string | null;
   createdAt: string;
 };
@@ -128,7 +146,9 @@ export type Enquiry = {
 export type Faq = {
   id: number;
   question: string;
+  questionHi: string;
   answer: string;
+  answerHi: string;
   sortOrder: number;
   isPublished: boolean;
 };
@@ -145,7 +165,9 @@ export type TeamMember = {
   id: number;
   name: string;
   role: string;
+  roleHi: string;
   bio: string;
+  bioHi: string;
   photoUrl: string;
   sortOrder: number;
 };

@@ -1,7 +1,7 @@
 import { Link, createFileRoute } from "@tanstack/react-router";
 import { Download, Printer, Share2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { dateLocale, displayCampaignTitle, settingsField, useLanguage, usePageSeo } from "@/lib/i18n";
+import { dateLocale, useLanguage, usePageSeo } from "@/lib/i18n";
 import { getDonationReceipt } from "@/lib/server/site";
 import { APP_NAME, SITE_URL, displayTagline } from "@/lib/site";
 import { downloadTextFile, formatDate, formatINR } from "@/lib/utils";
@@ -24,7 +24,7 @@ export const Route = createFileRoute("/donate_/thank-you")({
 
 function ThankYouPage() {
   const { donation, settings } = Route.useLoaderData();
-  const { t, language } = useLanguage();
+  const { t, language, tValue } = useLanguage();
   const locale = dateLocale(language);
   usePageSeo(t("seo.thankYouTitle"));
 
@@ -50,7 +50,7 @@ function ThankYouPage() {
   }
 
   const success = donation.status === "completed" || donation.status === "sandbox";
-  const campaignTitle = displayCampaignTitle(language, donation.campaignSlug, donation.campaignTitle);
+  const campaignTitle = donation.campaignTitle;
 
   function receiptText() {
     if (!donation) return "";
@@ -90,7 +90,7 @@ function ThankYouPage() {
           <div>
             <p className="font-display text-xl text-navy">{settings?.orgName}</p>
             <p className="text-sm text-muted-foreground">
-              {settings?.tagline ? settingsField(language, "tagline", displayTagline(settings.tagline)) : ""}
+              {settings?.tagline ? tValue({ en: displayTagline(settings.tagline), hi: settings.taglineHi }) : ""}
             </p>
           </div>
         </div>

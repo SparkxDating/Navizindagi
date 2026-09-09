@@ -9,7 +9,7 @@ import { Field } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { campaignField, dateLocale, displayCampaignTitle, useLanguage, type MessageKey } from "@/lib/i18n";
+import { dateLocale, useLanguage, type MessageKey } from "@/lib/i18n";
 import { PRESET_AMOUNTS } from "@/lib/site";
 import {
   completeSandboxDonation,
@@ -64,7 +64,7 @@ export function DonationForm({
   orgName: string;
 }) {
   const navigate = useNavigate();
-  const { t, language } = useLanguage();
+  const { t, language, tValue } = useLanguage();
   const locale = dateLocale(language);
   const create = useServerFn(createDonation);
   const verify = useServerFn(verifyRazorpayPayment);
@@ -97,7 +97,7 @@ export function DonationForm({
 
   const selected = campaigns.find((campaign) => campaign.slug === campaignSlug);
   const selectedTitle = selected
-    ? displayCampaignTitle(language, selected.slug, selected.title)
+    ? tValue({ en: selected.title, hi: selected.titleHi })
     : t("donate.floodRelief");
   const resolvedAmount = usingCustom ? Number.parseInt(custom, 10) || 0 : amount;
 
@@ -216,7 +216,7 @@ export function DonationForm({
           <div className="flex justify-between gap-4">
             <dt className="text-muted-foreground">{t("donate.campaignLabel")}</dt>
             <dd className="text-right text-navy">
-              {displayCampaignTitle(language, campaignSlug, sandboxStep.campaignTitle)}
+              {sandboxStep.campaignTitle}
             </dd>
           </div>
           <div className="flex justify-between gap-4">
@@ -291,10 +291,10 @@ export function DonationForm({
                 />
                 <span>
                   <span className="block font-semibold text-navy">
-                    {displayCampaignTitle(language, campaign.slug, campaign.title)}
+                    {tValue({ en: campaign.title, hi: campaign.titleHi })}
                   </span>
                   <span className="block text-sm text-muted-foreground">
-                    {campaignField(language, campaign.slug, "shortDescription", campaign.shortDescription)}
+                    {tValue({ en: campaign.shortDescription, hi: campaign.shortDescriptionHi })}
                   </span>
                 </span>
               </label>

@@ -8,6 +8,7 @@ import {
   lookupMessage,
   readStoredLanguage,
   resolveInitialLanguage,
+  tList,
   tValue,
   writeStoredLanguage,
 } from "./core.ts";
@@ -113,7 +114,8 @@ describe("i18n language system", () => {
     assert.equal(donation.referenceId, "NZF-TEST-LANG");
     assert.equal(donation.campaignSlug, "nepal-flood-relief");
     assert.equal(donation.campaignTitle, "Nepal Flood Relief");
-    assert.equal(displayCampaignTitle("hi", donation.campaignSlug, donation.campaignTitle), "नेपाल बाढ़ राहत");
+    assert.equal(displayCampaignTitle("hi", donation.campaignSlug, donation.campaignTitle, "नेपाल बाढ़ राहत"), "नेपाल बाढ़ राहत");
+    assert.equal(displayCampaignTitle("hi", donation.campaignSlug, donation.campaignTitle), "Nepal Flood Relief");
     assert.equal(donation.amount, 500);
   });
 
@@ -135,7 +137,7 @@ describe("i18n language system", () => {
       localizeDb("hi", "Support verified flood-relief efforts for families affected by monsoon flooding in Nepal."),
       "नेपाल में मानसून बाढ़ से प्रभावित परिवारों के लिए सत्यापित बाढ़-राहत प्रयासों का सहयोग करें।",
     );
-    assert.equal(displayCampaignTitle("hi", "assam-flood-relief", "Assam Flood Relief"), "असम बाढ़ राहत");
+    assert.equal(displayCampaignTitle("hi", "assam-flood-relief", "Assam Flood Relief", "असम बाढ़ राहत"), "असम बाढ़ राहत");
   });
 
   it("falls back to English when Hindi overlay is missing", () => {
@@ -147,8 +149,8 @@ describe("i18n language system", () => {
   });
 
   it("keeps existing campaign identifiers working after language change", () => {
-    assert.equal(displayCampaignTitle("hi", "nepal-flood-relief", "Nepal Flood Relief"), "नेपाल बाढ़ राहत");
-    assert.equal(displayCampaignTitle("en", "nepal-flood-relief", "Nepal Flood Relief"), "Nepal Flood Relief");
+    assert.equal(displayCampaignTitle("hi", "nepal-flood-relief", "Nepal Flood Relief", "नेपाल बाढ़ राहत"), "नेपाल बाढ़ राहत");
+    assert.equal(displayCampaignTitle("en", "nepal-flood-relief", "Nepal Flood Relief", "नेपाल बाढ़ राहत"), "Nepal Flood Relief");
     assert.equal(displayCampaignTitle("hi", "unknown-campaign", "Winter Relief"), "Winter Relief");
   });
 
@@ -168,6 +170,14 @@ describe("i18n language system", () => {
     assert.match(settingsField("hi", "aboutText", "Changed about copy"), /नवी ज़िंदगी फाउंडेशन/);
     assert.equal(settingsField("en", "aboutText", "Changed about copy"), "Changed about copy");
     assert.match(settingsField("hi", "mission", "Edited mission"), /करुणा/);
+  });
+
+  it("uses provided Hindi database fields and falls back to English", () => {
+    assert.equal(tValue("hi", { en: "Nepal Flood Relief", hi: "नेपाल बाढ़ राहत" }), "नेपाल बाढ़ राहत");
+    assert.equal(tValue("en", { en: "Nepal Flood Relief", hi: "नेपाल बाढ़ राहत" }), "Nepal Flood Relief");
+    assert.equal(tValue("hi", { en: "Nepal Flood Relief", hi: "" }), "Nepal Flood Relief");
+    assert.deepEqual(tList("hi", ["Food kits", "Clean water"], ["खाद्य किट"]), ["खाद्य किट", "Clean water"]);
+    assert.deepEqual(tList("en", ["Food kits", "Clean water"], ["खाद्य किट"]), ["Food kits", "Clean water"]);
   });
 
   it("interpolates placeholders without treating them as HTML", () => {

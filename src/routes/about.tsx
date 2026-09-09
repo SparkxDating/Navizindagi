@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { MapPin } from "lucide-react";
 import { BulletList, Prose } from "@/components/prose";
 import { PageHero, Section } from "@/components/section";
-import { settingsField, useLanguage, usePageSeo } from "@/lib/i18n";
+import { useLanguage, usePageSeo } from "@/lib/i18n";
 import { getPublicSite } from "@/lib/server/site";
 import { SITE_URL, displayTagline } from "@/lib/site";
 
@@ -25,7 +25,7 @@ export const Route = createFileRoute("/about")({
 
 function AboutPage() {
   const { settings, team } = Route.useLoaderData();
-  const { t, tValue, language } = useLanguage();
+  const { t, tValue } = useLanguage();
   usePageSeo(t("seo.aboutTitle"), t("seo.aboutDescription"));
   const fallback = t("common.toBeUpdated");
 
@@ -34,32 +34,32 @@ function AboutPage() {
       <PageHero
         eyebrow={t("about.eyebrow")}
         title={settings.orgName}
-        lead={settingsField(language, "tagline", displayTagline(settings.tagline))}
+        lead={tValue({ en: displayTagline(settings.tagline), hi: settings.taglineHi })}
         image="/facebook-cover.jpg"
         imageAlt={t("nav.logoAlt")}
       />
       <Section title={t("about.story")}>
-        <Prose text={settingsField(language, "aboutText", settings.aboutText)} className="mx-auto max-w-3xl" />
+        <Prose text={tValue({ en: settings.aboutText, hi: settings.aboutTextHi })} className="mx-auto max-w-3xl" />
       </Section>
       <Section tone="cream" title={t("about.mvv")}>
         <div className="grid gap-6 md:grid-cols-3">
           <article className="rounded-2xl bg-card p-6 shadow-card">
             <h3 className="font-display text-xl text-navy">{t("about.mission")}</h3>
-            <Prose className="mt-3 text-sm" text={settingsField(language, "mission", settings.mission) || fallback} />
+            <Prose className="mt-3 text-sm" text={tValue({ en: settings.mission, hi: settings.missionHi }) || fallback} />
           </article>
           <article className="rounded-2xl bg-card p-6 shadow-card">
             <h3 className="font-display text-xl text-navy">{t("about.vision")}</h3>
-            <Prose className="mt-3 text-sm" text={settingsField(language, "vision", settings.vision) || fallback} />
+            <Prose className="mt-3 text-sm" text={tValue({ en: settings.vision, hi: settings.visionHi }) || fallback} />
           </article>
           <article className="rounded-2xl bg-card p-6 shadow-card">
             <h3 className="font-display text-xl text-navy">{t("about.values")}</h3>
-            <BulletList className="mt-3 text-sm" text={settingsField(language, "valuesText", settings.valuesText) || fallback} />
+            <BulletList className="mt-3 text-sm" text={tValue({ en: settings.valuesText, hi: settings.valuesTextHi }) || fallback} />
           </article>
         </div>
       </Section>
       <Section id="what-we-do" title={t("about.whatWeDo")}>
         <div className="mx-auto max-w-3xl">
-          <BulletList text={settingsField(language, "areasOfWork", settings.areasOfWork) || fallback} />
+          <BulletList text={tValue({ en: settings.areasOfWork, hi: settings.areasOfWorkHi }) || fallback} />
         </div>
       </Section>
       <Section tone="cream" title={t("about.where")}>
@@ -98,8 +98,8 @@ function AboutPage() {
                   </div>
                 )}
                 <h3 className="font-display text-xl text-navy">{member.name}</h3>
-                <p className="text-sm font-medium text-teal-dark">{tValue({ en: member.role, hi: null }) || fallback}</p>
-                <p className="mt-2 text-sm text-muted-foreground">{tValue({ en: member.bio, hi: null }) || fallback}</p>
+                <p className="text-sm font-medium text-teal-dark">{tValue({ en: member.role, hi: member.roleHi }) || fallback}</p>
+                <p className="mt-2 text-sm text-muted-foreground">{tValue({ en: member.bio, hi: member.bioHi }) || fallback}</p>
               </article>
             ))}
           </div>
@@ -121,7 +121,7 @@ function AboutPage() {
           </div>
           <div>
             <dt className="text-muted-foreground">{t("about.notes")}</dt>
-            <dd className="text-muted-foreground">{settingsField(language, "registrationNotes", settings.registrationNotes) || fallback}</dd>
+            <dd className="text-muted-foreground">{tValue({ en: settings.registrationNotes, hi: settings.registrationNotesHi }) || fallback}</dd>
           </div>
         </dl>
       </Section>

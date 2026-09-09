@@ -61,6 +61,13 @@ export function tValue(
   return en || hi;
 }
 
+export function tList(language: Language, en: string[] = [], hi: string[] = []): string[] {
+  if (en.length === 0) {
+    return language === "hi" ? hi.map((item) => item.trim()).filter(Boolean) : [];
+  }
+  return en.map((item, index) => tValue(language, { en: item, hi: hi[index] }));
+}
+
 export function collectLeaves(messages: NestedMessages, prefix = ""): string[] {
   const keys: string[] = [];
   for (const [key, value] of Object.entries(messages)) {

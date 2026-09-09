@@ -12,8 +12,6 @@ export const dictionaries: Record<Language, NestedMessages> = {
   hi: hi as NestedMessages,
 };
 
-const KNOWN_CAMPAIGN_SLUGS = ["nepal-flood-relief", "assam-flood-relief", "general-relief"] as const;
-
 export const VOLUNTEER_INTERESTS = [
   { value: "Fundraising and donor outreach", key: "fundraising" },
   { value: "Relief logistics", key: "logistics" },
@@ -38,11 +36,13 @@ export function translate(language: Language, key: MessageKey, vars?: TranslateV
   return interpolate(primary ?? fallback ?? key, vars);
 }
 
-export function displayCampaignTitle(language: Language, slug: string, dbTitle: string): string {
-  if ((KNOWN_CAMPAIGN_SLUGS as readonly string[]).includes(slug)) {
-    return translate(language, `campaigns.known.${slug}.title` as MessageKey);
-  }
-  return tValue(language, { en: dbTitle, hi: null });
+export function displayCampaignTitle(
+  language: Language,
+  _slug: string,
+  dbTitle: string,
+  dbTitleHi?: string | null,
+): string {
+  return tValue(language, { en: dbTitle, hi: dbTitleHi });
 }
 
 export function dateLocale(language: Language) {

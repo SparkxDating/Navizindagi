@@ -3,7 +3,7 @@ import { ShieldCheck } from "lucide-react";
 import { Prose } from "@/components/prose";
 import { PageHero, Section } from "@/components/section";
 import { ProgressBar } from "@/components/ui/progress";
-import { campaignField, dateLocale, displayCampaignTitle, settingsField, useLanguage, usePageSeo } from "@/lib/i18n";
+import { dateLocale, useLanguage, usePageSeo } from "@/lib/i18n";
 import { getPublicSite } from "@/lib/server/site";
 import { SITE_URL } from "@/lib/site";
 import { formatDate, formatINR } from "@/lib/utils";
@@ -55,13 +55,13 @@ function TransparencyPage() {
               {t("transparency.tax")}
             </p>
             <p className="mt-2 text-sm text-muted-foreground">
-              {settingsField(language, "registrationNotes", settings.registrationNotes) || fallback}
+              {tValue({ en: settings.registrationNotes, hi: settings.registrationNotesHi }) || fallback}
             </p>
           </div>
         </div>
       </Section>
       <Section tone="cream">
-        <Prose className="mx-auto max-w-3xl" text={settingsField(language, "howDonationsUsed", settings.howDonationsUsed)} />
+        <Prose className="mx-auto max-w-3xl" text={tValue({ en: settings.howDonationsUsed, hi: settings.howDonationsUsedHi })} />
       </Section>
       <Section title={t("transparency.utilisation")}>
         <div className="grid gap-5">
@@ -69,7 +69,7 @@ function TransparencyPage() {
             <article key={campaign.id} className="rounded-2xl bg-card p-6 shadow-card">
               <div className="flex flex-wrap items-end justify-between gap-3">
                 <h3 className="font-display text-2xl text-navy">
-                  {displayCampaignTitle(language, campaign.slug, campaign.title)}
+                  {tValue({ en: campaign.title, hi: campaign.titleHi })}
                 </h3>
                 <p className="text-sm tabular-nums text-navy">
                   {campaign.amountRaised > 0 || campaign.targetAmount > 0
@@ -79,7 +79,7 @@ function TransparencyPage() {
               </div>
               <ProgressBar className="mt-4" raised={campaign.amountRaised} target={campaign.targetAmount} />
               <p className="mt-4 text-sm text-muted-foreground">
-                {campaignField(language, campaign.slug, "utilisationNotes", campaign.utilisationNotes)}
+                {tValue({ en: campaign.utilisationNotes, hi: campaign.utilisationNotesHi })}
               </p>
             </article>
           ))}
@@ -108,14 +108,14 @@ function TransparencyPage() {
         )}
       </Section>
       <Section title={t("transparency.payment")}>
-        <Prose className="mx-auto max-w-3xl" text={settingsField(language, "paymentInfo", settings.paymentInfo)} />
+        <Prose className="mx-auto max-w-3xl" text={tValue({ en: settings.paymentInfo, hi: settings.paymentInfoHi })} />
       </Section>
       <Section tone="cream" title={t("transparency.faq")}>
         <div className="mx-auto max-w-3xl space-y-3">
           {faqs.map((faq) => (
             <details key={faq.id} className="rounded-2xl bg-card p-5 shadow-card">
-              <summary className="cursor-pointer font-semibold text-navy">{tValue({ en: faq.question, hi: null })}</summary>
-              <p className="mt-3 text-sm leading-relaxed text-muted-foreground">{tValue({ en: faq.answer, hi: null })}</p>
+              <summary className="cursor-pointer font-semibold text-navy">{tValue({ en: faq.question, hi: faq.questionHi })}</summary>
+              <p className="mt-3 text-sm leading-relaxed text-muted-foreground">{tValue({ en: faq.answer, hi: faq.answerHi })}</p>
             </details>
           ))}
         </div>

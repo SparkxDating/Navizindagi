@@ -55,7 +55,7 @@ export const getPublicSite = createServerFn({ method: "GET" }).handler(async () 
     sql`select * from reports where published_at is not null order by published_at desc, id desc`,
     sql`select * from team_members order by sort_order, id`,
     sql.query<Record<string, unknown>>(
-      `select u.*, c.title as campaign_title, c.slug as campaign_slug
+      `select u.*, c.title as campaign_title, c.title_hi as campaign_title_hi, c.slug as campaign_slug
        from campaign_updates u
        join campaigns c on c.id = u.campaign_id
        where u.published_at is not null
@@ -115,7 +115,7 @@ export const getDonationReceipt = createServerFn({ method: "GET" })
     return {
       donation,
       settings: settings
-        ? { orgName: settings.orgName, tagline: settings.tagline }
+        ? { orgName: settings.orgName, tagline: settings.tagline, taglineHi: settings.taglineHi }
         : null,
     };
   });

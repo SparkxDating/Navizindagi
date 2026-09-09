@@ -1,6 +1,6 @@
 import { Link } from "@tanstack/react-router";
 import { Facebook, Instagram, Mail, MapPin, Phone } from "lucide-react";
-import { displayCampaignTitle, settingsField, useLanguage } from "@/lib/i18n";
+import { useLanguage } from "@/lib/i18n";
 import type { SiteSettings } from "@/lib/types";
 import { APP_NAME, displayTagline } from "@/lib/site";
 
@@ -14,7 +14,7 @@ const XIcon = () => (
 );
 
 export function Footer({ settings }: { settings: SiteSettings | null }) {
-  const { t, language } = useLanguage();
+  const { t, tValue } = useLanguage();
   const org = settings?.orgName ?? APP_NAME;
   return (
     <footer className="bg-navy text-cream">
@@ -24,11 +24,11 @@ export function Footer({ settings }: { settings: SiteSettings | null }) {
             <img src="/logo.jpg" alt={t("nav.logoAlt")} width={48} height={48} className="size-12 rounded-full object-cover" />
             <div>
               <p className="font-display text-xl text-cream">{org}</p>
-              <p className="text-sm text-cream/70">{settingsField(language, "tagline", displayTagline(settings?.tagline))}</p>
+              <p className="text-sm text-cream/70">{tValue({ en: displayTagline(settings?.tagline), hi: settings?.taglineHi })}</p>
             </div>
           </div>
           <p className="mt-4 max-w-sm text-sm leading-relaxed text-cream/70">
-            {settingsField(language, "mission", settings?.mission) || t("footer.fallbackMission")}
+            {tValue({ en: settings?.mission, hi: settings?.missionHi }) || t("footer.fallbackMission")}
           </p>
           <p className="mt-6 text-xs font-semibold uppercase tracking-[0.16em] text-teal-soft">{t("footer.contact")}</p>
           <ul className="mt-3 space-y-3 text-sm text-cream/80">
@@ -80,12 +80,12 @@ export function Footer({ settings }: { settings: SiteSettings | null }) {
           <ul className="mt-3 space-y-2 text-sm">
             <li>
               <Link to="/campaign/$slug" params={{ slug: "nepal-flood-relief" }} className="text-cream/80 hover:text-cream">
-                {displayCampaignTitle(language, "nepal-flood-relief", "Nepal Flood Relief")}
+                {t("campaigns.known.nepal-flood-relief.title")}
               </Link>
             </li>
             <li>
               <Link to="/campaign/$slug" params={{ slug: "assam-flood-relief" }} className="text-cream/80 hover:text-cream">
-                {displayCampaignTitle(language, "assam-flood-relief", "Assam Flood Relief")}
+                {t("campaigns.known.assam-flood-relief.title")}
               </Link>
             </li>
             <li>

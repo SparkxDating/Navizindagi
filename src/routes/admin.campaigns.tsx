@@ -15,18 +15,24 @@ export const Route = createFileRoute("/admin/campaigns")({
   component: CampaignsAdmin,
 });
 
-function emptyCampaign(): Partial<Campaign> & { reliefPrioritiesText: string } {
+function emptyCampaign(): Partial<Campaign> & { reliefPrioritiesText: string; reliefPrioritiesHiText: string } {
   return {
     slug: "",
     title: "",
+    titleHi: "",
     locationLabel: "",
     countryCode: "",
     heroImageUrl: "",
     shortDescription: "",
+    shortDescriptionHi: "",
     situationText: "",
+    situationTextHi: "",
     missionText: "",
+    missionTextHi: "",
     reliefPrioritiesText: "",
+    reliefPrioritiesHiText: "",
     utilisationNotes: "",
+    utilisationNotesHi: "",
     targetAmount: 0,
     manualAmountRaised: 0,
     manualDonorCount: 0,
@@ -41,7 +47,7 @@ function CampaignsAdmin() {
   const canWrite = workspace.permissions.writeCampaigns;
   const { data, error, loading, reload } = useAdminQuery(() => listAdminCampaigns());
   const campaigns = data ?? [];
-  const [editing, setEditing] = useState<(Partial<Campaign> & { reliefPrioritiesText: string }) | null>(null);
+  const [editing, setEditing] = useState<(Partial<Campaign> & { reliefPrioritiesText: string; reliefPrioritiesHiText: string }) | null>(null);
   const [busy, setBusy] = useState(false);
 
   if (loading || error) {
@@ -61,6 +67,7 @@ function CampaignsAdmin() {
     setEditing({
       ...campaign,
       reliefPrioritiesText: campaign.reliefPriorities.join("\n"),
+      reliefPrioritiesHiText: campaign.reliefPrioritiesHi.join("\n"),
     });
   }
 
@@ -75,14 +82,20 @@ function CampaignsAdmin() {
           id: editing.id,
           slug: String(form.get("slug") ?? ""),
           title: String(form.get("title") ?? ""),
+          titleHi: String(form.get("titleHi") ?? ""),
           locationLabel: String(form.get("locationLabel") ?? ""),
           countryCode: String(form.get("countryCode") ?? ""),
           heroImageUrl: String(form.get("heroImageUrl") ?? ""),
           shortDescription: String(form.get("shortDescription") ?? ""),
+          shortDescriptionHi: String(form.get("shortDescriptionHi") ?? ""),
           situationText: String(form.get("situationText") ?? ""),
+          situationTextHi: String(form.get("situationTextHi") ?? ""),
           missionText: String(form.get("missionText") ?? ""),
+          missionTextHi: String(form.get("missionTextHi") ?? ""),
           reliefPriorities: String(form.get("reliefPriorities") ?? ""),
+          reliefPrioritiesHi: String(form.get("reliefPrioritiesHi") ?? ""),
           utilisationNotes: String(form.get("utilisationNotes") ?? ""),
+          utilisationNotesHi: String(form.get("utilisationNotesHi") ?? ""),
           targetAmount: Number(form.get("targetAmount") ?? 0),
           manualAmountRaised: Number(form.get("manualAmountRaised") ?? 0),
           manualDonorCount: Number(form.get("manualDonorCount") ?? 0),
@@ -135,6 +148,9 @@ function CampaignsAdmin() {
             <Field label="Title" htmlFor="title" required>
               <Input id="title" name="title" required defaultValue={editing.title} />
             </Field>
+            <Field label="Title (हिंदी)" htmlFor="titleHi">
+              <Input id="titleHi" name="titleHi" defaultValue={editing.titleHi} />
+            </Field>
             <Field label="Slug" htmlFor="slug" required>
               <Input id="slug" name="slug" required defaultValue={editing.slug} />
             </Field>
@@ -150,17 +166,32 @@ function CampaignsAdmin() {
             <Field label="Short description" htmlFor="shortDescription" className="sm:col-span-2" required>
               <Textarea id="shortDescription" name="shortDescription" required defaultValue={editing.shortDescription} />
             </Field>
+            <Field label="Short description (हिंदी)" htmlFor="shortDescriptionHi" className="sm:col-span-2">
+              <Textarea id="shortDescriptionHi" name="shortDescriptionHi" defaultValue={editing.shortDescriptionHi} />
+            </Field>
             <Field label="Situation" htmlFor="situationText" className="sm:col-span-2" required>
               <Textarea id="situationText" name="situationText" required defaultValue={editing.situationText} />
+            </Field>
+            <Field label="Situation (हिंदी)" htmlFor="situationTextHi" className="sm:col-span-2">
+              <Textarea id="situationTextHi" name="situationTextHi" defaultValue={editing.situationTextHi} />
             </Field>
             <Field label="Mission" htmlFor="missionText" className="sm:col-span-2" required>
               <Textarea id="missionText" name="missionText" required defaultValue={editing.missionText} />
             </Field>
+            <Field label="Mission (हिंदी)" htmlFor="missionTextHi" className="sm:col-span-2">
+              <Textarea id="missionTextHi" name="missionTextHi" defaultValue={editing.missionTextHi} />
+            </Field>
             <Field label="Relief priorities (one per line)" htmlFor="reliefPriorities" className="sm:col-span-2">
               <Textarea id="reliefPriorities" name="reliefPriorities" defaultValue={editing.reliefPrioritiesText} />
             </Field>
+            <Field label="Relief priorities (हिंदी, one per line)" htmlFor="reliefPrioritiesHi" className="sm:col-span-2">
+              <Textarea id="reliefPrioritiesHi" name="reliefPrioritiesHi" defaultValue={editing.reliefPrioritiesHiText} />
+            </Field>
             <Field label="Utilisation notes" htmlFor="utilisationNotes" className="sm:col-span-2">
               <Textarea id="utilisationNotes" name="utilisationNotes" defaultValue={editing.utilisationNotes} />
+            </Field>
+            <Field label="Utilisation notes (हिंदी)" htmlFor="utilisationNotesHi" className="sm:col-span-2">
+              <Textarea id="utilisationNotesHi" name="utilisationNotesHi" defaultValue={editing.utilisationNotesHi} />
             </Field>
             <Field label="Target amount (INR)" htmlFor="targetAmount">
               <Input id="targetAmount" name="targetAmount" type="number" min={0} defaultValue={editing.targetAmount} />

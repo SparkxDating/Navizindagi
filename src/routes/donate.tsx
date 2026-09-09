@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { Lock, ShieldCheck } from "lucide-react";
 import { DonationForm } from "@/components/donation-form";
 import { PageHero } from "@/components/section";
-import { settingsField, useLanguage, usePageSeo } from "@/lib/i18n";
+import { useLanguage, usePageSeo } from "@/lib/i18n";
 import { getPaymentConfig } from "@/lib/server/payment";
 import { getPublicSite } from "@/lib/server/site";
 import { SITE_URL } from "@/lib/site";
@@ -37,7 +37,7 @@ export const Route = createFileRoute("/donate")({
 function DonatePage() {
   const { campaign } = Route.useSearch();
   const { site, payment } = Route.useLoaderData();
-  const { t, language } = useLanguage();
+  const { t, tValue } = useLanguage();
   usePageSeo(t("seo.donateTitle"), t("seo.donateDescription"));
 
   return (
@@ -87,7 +87,7 @@ function DonatePage() {
           <div className="rounded-2xl bg-card p-6 shadow-card">
             <h2 className="font-display text-xl text-navy">{t("donate.paymentInfo")}</h2>
             <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
-              {settingsField(language, "paymentInfo", site.settings.paymentInfo)}
+              {tValue({ en: site.settings.paymentInfo, hi: site.settings.paymentInfoHi })}
             </p>
           </div>
         </aside>

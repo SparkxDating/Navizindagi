@@ -35,11 +35,17 @@ function SettingsAdmin() {
         data: {
           orgName: read("orgName"),
           tagline: read("tagline"),
+          taglineHi: read("taglineHi"),
           aboutText: read("aboutText"),
+          aboutTextHi: read("aboutTextHi"),
           mission: read("mission"),
+          missionHi: read("missionHi"),
           vision: read("vision"),
+          visionHi: read("visionHi"),
           valuesText: read("valuesText"),
+          valuesTextHi: read("valuesTextHi"),
           areasOfWork: read("areasOfWork"),
+          areasOfWorkHi: read("areasOfWorkHi"),
           address: read("address"),
           phone: read("phone"),
           email: read("email"),
@@ -50,8 +56,11 @@ function SettingsAdmin() {
           mapsEmbedUrl: read("mapsEmbedUrl"),
           registrationCin: read("registrationCin"),
           registrationNotes: read("registrationNotes"),
+          registrationNotesHi: read("registrationNotesHi"),
           howDonationsUsed: read("howDonationsUsed"),
+          howDonationsUsedHi: read("howDonationsUsedHi"),
           paymentInfo: read("paymentInfo"),
+          paymentInfoHi: read("paymentInfoHi"),
         },
       });
       toast.success("Settings saved");
@@ -73,20 +82,38 @@ function SettingsAdmin() {
         <Field label="Tagline" htmlFor="tagline" required>
           <Input id="tagline" name="tagline" required defaultValue={settings.tagline} />
         </Field>
+        <Field label="Tagline (हिंदी)" htmlFor="taglineHi">
+          <Input id="taglineHi" name="taglineHi" defaultValue={settings.taglineHi} />
+        </Field>
         <Field label="About" htmlFor="aboutText" className="sm:col-span-2">
           <Textarea id="aboutText" name="aboutText" defaultValue={settings.aboutText} />
+        </Field>
+        <Field label="About (हिंदी)" htmlFor="aboutTextHi" className="sm:col-span-2">
+          <Textarea id="aboutTextHi" name="aboutTextHi" defaultValue={settings.aboutTextHi} />
         </Field>
         <Field label="Mission" htmlFor="mission" className="sm:col-span-2">
           <Textarea id="mission" name="mission" defaultValue={settings.mission} />
         </Field>
+        <Field label="Mission (हिंदी)" htmlFor="missionHi" className="sm:col-span-2">
+          <Textarea id="missionHi" name="missionHi" defaultValue={settings.missionHi} />
+        </Field>
         <Field label="Vision" htmlFor="vision" className="sm:col-span-2">
           <Textarea id="vision" name="vision" defaultValue={settings.vision} />
+        </Field>
+        <Field label="Vision (हिंदी)" htmlFor="visionHi" className="sm:col-span-2">
+          <Textarea id="visionHi" name="visionHi" defaultValue={settings.visionHi} />
         </Field>
         <Field label="Values" htmlFor="valuesText" className="sm:col-span-2">
           <Textarea id="valuesText" name="valuesText" defaultValue={settings.valuesText} />
         </Field>
+        <Field label="Values (हिंदी)" htmlFor="valuesTextHi" className="sm:col-span-2">
+          <Textarea id="valuesTextHi" name="valuesTextHi" defaultValue={settings.valuesTextHi} />
+        </Field>
         <Field label="Areas of work" htmlFor="areasOfWork" className="sm:col-span-2">
           <Textarea id="areasOfWork" name="areasOfWork" defaultValue={settings.areasOfWork} />
+        </Field>
+        <Field label="Areas of work (हिंदी)" htmlFor="areasOfWorkHi" className="sm:col-span-2">
+          <Textarea id="areasOfWorkHi" name="areasOfWorkHi" defaultValue={settings.areasOfWorkHi} />
         </Field>
         <Field label="Address" htmlFor="address" className="sm:col-span-2">
           <Input id="address" name="address" defaultValue={settings.address} />
@@ -118,11 +145,20 @@ function SettingsAdmin() {
         <Field label="Registration notes" htmlFor="registrationNotes" className="sm:col-span-2">
           <Textarea id="registrationNotes" name="registrationNotes" defaultValue={settings.registrationNotes} />
         </Field>
+        <Field label="Registration notes (हिंदी)" htmlFor="registrationNotesHi" className="sm:col-span-2">
+          <Textarea id="registrationNotesHi" name="registrationNotesHi" defaultValue={settings.registrationNotesHi} />
+        </Field>
         <Field label="How donations are used" htmlFor="howDonationsUsed" className="sm:col-span-2">
           <Textarea id="howDonationsUsed" name="howDonationsUsed" defaultValue={settings.howDonationsUsed} />
         </Field>
+        <Field label="How donations are used (हिंदी)" htmlFor="howDonationsUsedHi" className="sm:col-span-2">
+          <Textarea id="howDonationsUsedHi" name="howDonationsUsedHi" defaultValue={settings.howDonationsUsedHi} />
+        </Field>
         <Field label="Payment information" htmlFor="paymentInfo" className="sm:col-span-2">
           <Textarea id="paymentInfo" name="paymentInfo" defaultValue={settings.paymentInfo} />
+        </Field>
+        <Field label="Payment information (हिंदी)" htmlFor="paymentInfoHi" className="sm:col-span-2">
+          <Textarea id="paymentInfoHi" name="paymentInfoHi" defaultValue={settings.paymentInfoHi} />
         </Field>
       </div>
       <Button type="submit" disabled={busy}>

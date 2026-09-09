@@ -39,7 +39,9 @@ function UpdatesAdmin() {
         data: {
           campaignId: Number(form.get("campaignId")),
           title: String(form.get("title") ?? ""),
+          titleHi: String(form.get("titleHi") ?? ""),
           body: String(form.get("body") ?? ""),
+          bodyHi: String(form.get("bodyHi") ?? ""),
           published: form.get("published") === "on",
         },
       });
@@ -72,8 +74,14 @@ function UpdatesAdmin() {
         <Field label="Title" htmlFor="title" required>
           <Input id="title" name="title" required />
         </Field>
+        <Field label="Title (हिंदी)" htmlFor="titleHi">
+          <Input id="titleHi" name="titleHi" />
+        </Field>
         <Field label="Body" htmlFor="body" required>
           <Textarea id="body" name="body" required />
+        </Field>
+        <Field label="Body (हिंदी)" htmlFor="bodyHi">
+          <Textarea id="bodyHi" name="bodyHi" />
         </Field>
         <label className="flex items-center gap-2 text-sm">
           <Checkbox name="published" defaultChecked /> Publish now

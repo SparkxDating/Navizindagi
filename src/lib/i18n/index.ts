@@ -12,6 +12,7 @@ export {
   isLanguage,
   readStoredLanguage,
   resolveInitialLanguage,
+  tList,
   tValue as resolveLocalizedValue,
   writeStoredLanguage,
 } from "./core.ts";

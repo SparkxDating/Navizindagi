@@ -26,7 +26,7 @@ export function SiteShell({
 
   return (
     <div className="flex min-h-screen flex-col">
-      <Navbar orgName={settings?.orgName} tagline={settings?.tagline} />
+      <Navbar orgName={settings?.orgName} tagline={settings?.tagline} taglineHi={settings?.taglineHi} />
       <main className="flex-1 pb-20 sm:pb-0">{children}</main>
       <Footer settings={settings} />
 

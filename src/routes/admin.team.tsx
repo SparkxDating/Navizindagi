@@ -35,7 +35,9 @@ function TeamAdmin() {
         data: {
           name: String(form.get("name") ?? ""),
           role: String(form.get("role") ?? ""),
+          roleHi: String(form.get("roleHi") ?? ""),
           bio: String(form.get("bio") ?? ""),
+          bioHi: String(form.get("bioHi") ?? ""),
           photoUrl: String(form.get("photoUrl") ?? ""),
           sortOrder: Number(form.get("sortOrder") ?? 0),
         },
@@ -61,11 +63,17 @@ function TeamAdmin() {
           <Field label="Role" htmlFor="role" required>
             <Input id="role" name="role" required />
           </Field>
+          <Field label="Role (हिंदी)" htmlFor="roleHi">
+            <Input id="roleHi" name="roleHi" />
+          </Field>
           <Field label="Photo URL" htmlFor="photoUrl" className="sm:col-span-2">
             <Input id="photoUrl" name="photoUrl" />
           </Field>
           <Field label="Bio" htmlFor="bio" className="sm:col-span-2">
             <Textarea id="bio" name="bio" />
+          </Field>
+          <Field label="Bio (हिंदी)" htmlFor="bioHi" className="sm:col-span-2">
+            <Textarea id="bioHi" name="bioHi" />
           </Field>
           <Field label="Sort order" htmlFor="sortOrder">
             <Input id="sortOrder" name="sortOrder" type="number" min={0} defaultValue={0} />

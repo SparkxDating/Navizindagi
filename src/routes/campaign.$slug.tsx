@@ -6,7 +6,7 @@ import { UpdateCard } from "@/components/update-card";
 import { Button } from "@/components/ui/button";
 import { ProgressBar } from "@/components/ui/progress";
 import { StatTile } from "@/components/stat-tile";
-import { campaignField, dateLocale, displayCampaignTitle, localizeDb, settingsField, useLanguage, usePageSeo } from "@/lib/i18n";
+import { dateLocale, tList, useLanguage, usePageSeo } from "@/lib/i18n";
 import { getCampaignPage } from "@/lib/server/site";
 import { RELIEF_CATEGORIES, SITE_URL } from "@/lib/site";
 import { formatDate, formatINR } from "@/lib/utils";
@@ -44,15 +44,13 @@ export const Route = createFileRoute("/campaign/$slug")({
 
 function CampaignPage() {
   const { campaign, updates, campaigns, settings } = Route.useLoaderData();
-  const { t, language } = useLanguage();
+  const { t, language, tValue } = useLanguage();
   const locale = dateLocale(language);
-  const title = campaign ? displayCampaignTitle(language, campaign.slug, campaign.title) : "";
+  const title = campaign ? tValue({ en: campaign.title, hi: campaign.titleHi }) : "";
   const description = campaign
-    ? campaignField(language, campaign.slug, "shortDescription", campaign.shortDescription)
+    ? tValue({ en: campaign.shortDescription, hi: campaign.shortDescriptionHi })
     : "";
-  const location = campaign
-    ? campaignField(language, campaign.slug, "locationLabel", campaign.locationLabel)
-    : "";
+  const location = campaign?.locationLabel ?? "";
   usePageSeo(title ? `${title} · Navi Zindagi Foundation` : t("seo.campaignsTitle"), description);
   if (!campaign) return null;
   const others = campaigns.filter((item) => item.id !== campaign.id && item.slug !== "general-relief");
@@ -62,7 +60,7 @@ function CampaignPage() {
     campaign.heroImageUrl ? { src: campaign.heroImageUrl, alt: title } : null,
     ...RELIEF_CATEGORIES.filter((item) =>
       campaign.reliefPriorities.some((priority) => priority.toLowerCase().includes(item.title.split(" ")[0].toLowerCase())),
-    ).map((item) => ({ src: item.image, alt: t("campaign.reliefAlt", { title: localizeDb(language, item.title) }) })),
+    ).map((item) => ({ src: item.image, alt: t("campaign.reliefAlt", { title: item.title }) })),
   ].filter((item, index, list): item is { src: string; alt: string } => {
     if (!item) return false;
     return list.findIndex((other) => other?.src === item.src) === index;
@@ -113,23 +111,23 @@ function CampaignPage() {
             <h2 className="font-display text-2xl text-navy">{t("campaign.situation")}</h2>
             <Prose
               className="mt-4"
-              text={campaignField(language, campaign.slug, "situationText", campaign.situationText)}
+              text={tValue({ en: campaign.situationText, hi: campaign.situationTextHi })}
             />
           </section>
           <section>
             <h2 className="font-display text-2xl text-navy">{t("campaign.response")}</h2>
             <Prose
               className="mt-4"
-              text={campaignField(language, campaign.slug, "missionText", campaign.missionText)}
+              text={tValue({ en: campaign.missionText, hi: campaign.missionTextHi })}
             />
             <ul className="mt-6 space-y-2 text-muted-foreground">
               {campaign.reliefPriorities.length === 0 ? (
                 <li>{fallback}</li>
               ) : (
-                campaign.reliefPriorities.map((item) => (
+                tList(language, campaign.reliefPriorities, campaign.reliefPrioritiesHi).map((item) => (
                   <li key={item} className="flex gap-3">
                     <span className="mt-2 size-1.5 shrink-0 rounded-full bg-teal" />
-                    {localizeDb(language, item)}
+                    {item}
                   </li>
                 ))
               )}
@@ -194,10 +192,10 @@ function CampaignPage() {
             <h2 className="font-display text-2xl text-navy">{t("campaign.transparency")}</h2>
             <BulletList
               className="mt-4 text-sm"
-              text={campaignField(language, campaign.slug, "utilisationNotes", campaign.utilisationNotes)}
+              text={tValue({ en: campaign.utilisationNotes, hi: campaign.utilisationNotesHi })}
             />
             <p className="mt-4 text-sm text-muted-foreground">
-              {t("campaign.orgNotes")}: {settingsField(language, "registrationNotes", settings.registrationNotes) || fallback}
+              {t("campaign.orgNotes")}: {tValue({ en: settings.registrationNotes, hi: settings.registrationNotesHi }) || fallback}
             </p>
             <Button asChild variant="outline" className="mt-4">
               <Link to="/transparency">{t("campaign.viewOrgTransparency")}</Link>

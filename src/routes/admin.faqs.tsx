@@ -35,7 +35,9 @@ function FaqsAdmin() {
       await saveFaq({
         data: {
           question: String(form.get("question") ?? ""),
+          questionHi: String(form.get("questionHi") ?? ""),
           answer: String(form.get("answer") ?? ""),
+          answerHi: String(form.get("answerHi") ?? ""),
           sortOrder: Number(form.get("sortOrder") ?? 0),
           isPublished: form.get("isPublished") === "on",
         },
@@ -57,8 +59,14 @@ function FaqsAdmin() {
         <Field label="Question" htmlFor="question" required>
           <Input id="question" name="question" required />
         </Field>
+        <Field label="Question (हिंदी)" htmlFor="questionHi">
+          <Input id="questionHi" name="questionHi" />
+        </Field>
         <Field label="Answer" htmlFor="answer" required>
           <Textarea id="answer" name="answer" required />
+        </Field>
+        <Field label="Answer (हिंदी)" htmlFor="answerHi">
+          <Textarea id="answerHi" name="answerHi" />
         </Field>
         <Field label="Sort order" htmlFor="sortOrder">
           <Input id="sortOrder" name="sortOrder" type="number" min={0} defaultValue={faqs.length + 1} />

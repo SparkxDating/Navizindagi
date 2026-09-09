@@ -32,6 +32,11 @@ import {
   num,
 } from "./mappers";
 
+function emptyToNull(value?: string | null) {
+  const trimmed = (value ?? "").trim();
+  return trimmed ? trimmed : null;
+}
+
 function workspacePayload(workspace: Workspace) {
   return {
     userId: workspace.userId,
@@ -178,10 +183,17 @@ export const saveCampaign = createServerFn({ method: "POST" })
     assertPermission(workspace, "writeCampaigns");
     const sql = await getSql();
     const priorities = JSON.stringify(parseStringList(data.reliefPriorities));
+    const prioritiesHi = JSON.stringify(parseStringList(data.reliefPrioritiesHi ?? ""));
     const countryCode = data.countryCode ?? "";
     const hero = data.heroImageUrl ?? "";
     const utilisation = data.utilisationNotes ?? "";
     const campaignStatus = data.isActive ? "active" : "paused";
+    const titleHi = emptyToNull(data.titleHi);
+    const shortDescriptionHi = emptyToNull(data.shortDescriptionHi);
+    const situationTextHi = emptyToNull(data.situationTextHi);
+    const missionTextHi = emptyToNull(data.missionTextHi);
+    const utilisationNotesHi = emptyToNull(data.utilisationNotesHi);
+    const reliefPrioritiesHi = parseStringList(data.reliefPrioritiesHi ?? "").length ? prioritiesHi : null;
     if (data.id) {
       await assertCampaignInWorkspace(workspace, data.id);
       const updated = await sql.query<{ id: number }>(
@@ -189,18 +201,22 @@ export const saveCampaign = createServerFn({ method: "POST" })
           ? `update campaigns set
                slug=$1, title=$2, location_label=$3, country_code=$4, hero_image_url=$5,
                short_description=$6, situation_text=$7, mission_text=$8, relief_priorities=$9,
-               utilisation_notes=$10, target_amount=$11, manual_amount_raised=$12,
-               manual_donor_count=$13, is_featured=$14, is_active=$15, sort_order=$16,
-               status=$17, updated_at=now()
-             where id=$18
+               utilisation_notes=$10, title_hi=$11, short_description_hi=$12, situation_text_hi=$13,
+               mission_text_hi=$14, relief_priorities_hi=$15, utilisation_notes_hi=$16,
+               target_amount=$17, manual_amount_raised=$18,
+               manual_donor_count=$19, is_featured=$20, is_active=$21, sort_order=$22,
+               status=$23, updated_at=now()
+             where id=$24
              returning id`
           : `update campaigns set
                slug=$1, title=$2, location_label=$3, country_code=$4, hero_image_url=$5,
                short_description=$6, situation_text=$7, mission_text=$8, relief_priorities=$9,
-               utilisation_notes=$10, target_amount=$11, manual_amount_raised=$12,
-               manual_donor_count=$13, is_featured=$14, is_active=$15, sort_order=$16,
-               status=$17, updated_at=now()
-             where id=$18 and organization_id=$19
+               utilisation_notes=$10, title_hi=$11, short_description_hi=$12, situation_text_hi=$13,
+               mission_text_hi=$14, relief_priorities_hi=$15, utilisation_notes_hi=$16,
+               target_amount=$17, manual_amount_raised=$18,
+               manual_donor_count=$19, is_featured=$20, is_active=$21, sort_order=$22,
+               status=$23, updated_at=now()
+             where id=$24 and organization_id=$25
              returning id`,
         workspace.isPlatformAdmin
           ? [
@@ -214,6 +230,12 @@ export const saveCampaign = createServerFn({ method: "POST" })
               data.missionText,
               priorities,
               utilisation,
+              titleHi,
+              shortDescriptionHi,
+              situationTextHi,
+              missionTextHi,
+              reliefPrioritiesHi,
+              utilisationNotesHi,
               data.targetAmount,
               data.manualAmountRaised,
               data.manualDonorCount,
@@ -234,6 +256,12 @@ export const saveCampaign = createServerFn({ method: "POST" })
               data.missionText,
               priorities,
               utilisation,
+              titleHi,
+              shortDescriptionHi,
+              situationTextHi,
+              missionTextHi,
+              reliefPrioritiesHi,
+              utilisationNotesHi,
               data.targetAmount,
               data.manualAmountRaised,
               data.manualDonorCount,
@@ -251,14 +279,16 @@ export const saveCampaign = createServerFn({ method: "POST" })
     const inserted = await sql.query<{ id: number }>(
       `insert into campaigns (
          slug, title, location_label, country_code, hero_image_url, short_description,
-         situation_text, mission_text, relief_priorities, utilisation_notes, target_amount,
+         situation_text, mission_text, relief_priorities, utilisation_notes,
+         title_hi, short_description_hi, situation_text_hi, mission_text_hi,
+         relief_priorities_hi, utilisation_notes_hi, target_amount,
          manual_amount_raised, manual_donor_count, is_featured, is_active, sort_order,
          organization_id, created_by, status
        ) values (
-         $1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,
-         $17,
-         (select id from "user" where id = $18),
-         $19
+         $1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21,$22,
+         $23,
+         (select id from "user" where id = $24),
+         $25
        )
        returning id`,
       [
@@ -272,6 +302,12 @@ export const saveCampaign = createServerFn({ method: "POST" })
         data.missionText,
         priorities,
         utilisation,
+        titleHi,
+        shortDescriptionHi,
+        situationTextHi,
+        missionTextHi,
+        reliefPrioritiesHi,
+        utilisationNotesHi,
         data.targetAmount,
         data.manualAmountRaised,
         data.manualDonorCount,
@@ -368,18 +404,28 @@ export const saveUpdate = createServerFn({ method: "POST" })
     if (data.id) {
       const updated = await sql.query<{ id: number }>(
         workspace.isPlatformAdmin
-          ? `update campaign_updates set campaign_id=$1, title=$2, body=$3, published_at=$4
-             where id=$5 returning id`
-          : `update campaign_updates u set campaign_id=$1, title=$2, body=$3, published_at=$4
+          ? `update campaign_updates set campaign_id=$1, title=$2, body=$3, title_hi=$4, body_hi=$5, published_at=$6
+             where id=$7 returning id`
+          : `update campaign_updates u set campaign_id=$1, title=$2, body=$3, title_hi=$4, body_hi=$5, published_at=$6
              from campaigns c
-             where u.id=$5 and u.campaign_id = c.id and c.organization_id=$6
+             where u.id=$7 and u.campaign_id = c.id and c.organization_id=$8
              returning u.id`,
         workspace.isPlatformAdmin
-          ? [data.campaignId, data.title, data.body, data.published ? new Date().toISOString() : null, data.id]
+          ? [
+              data.campaignId,
+              data.title,
+              data.body,
+              emptyToNull(data.titleHi),
+              emptyToNull(data.bodyHi),
+              data.published ? new Date().toISOString() : null,
+              data.id,
+            ]
           : [
               data.campaignId,
               data.title,
               data.body,
+              emptyToNull(data.titleHi),
+              emptyToNull(data.bodyHi),
               data.published ? new Date().toISOString() : null,
               data.id,
               workspace.organizationId,
@@ -389,9 +435,16 @@ export const saveUpdate = createServerFn({ method: "POST" })
       return { ok: true as const };
     }
     await sql.query(
-      `insert into campaign_updates (campaign_id, title, body, published_at)
-       values ($1,$2,$3,$4)`,
-      [data.campaignId, data.title, data.body, data.published ? new Date().toISOString() : null],
+      `insert into campaign_updates (campaign_id, title, body, title_hi, body_hi, published_at)
+       values ($1,$2,$3,$4,$5,$6)`,
+      [
+        data.campaignId,
+        data.title,
+        data.body,
+        emptyToNull(data.titleHi),
+        emptyToNull(data.bodyHi),
+        data.published ? new Date().toISOString() : null,
+      ],
     );
     return { ok: true as const };
   });
@@ -429,7 +482,9 @@ export const saveSettings = createServerFn({ method: "POST" })
          areas_of_work=$7, address=$8, phone=$9, email=$10, whatsapp=$11,
          facebook_url=$12, instagram_url=$13, twitter_url=$14, maps_embed_url=$15,
          registration_cin=$16, registration_notes=$17, how_donations_used=$18,
-         payment_info=$19, updated_at=now()
+         payment_info=$19, tagline_hi=$20, about_text_hi=$21, mission_hi=$22, vision_hi=$23,
+         values_text_hi=$24, areas_of_work_hi=$25, registration_notes_hi=$26,
+         how_donations_used_hi=$27, payment_info_hi=$28, updated_at=now()
        where id=1`,
       [
         data.orgName,
@@ -451,6 +506,15 @@ export const saveSettings = createServerFn({ method: "POST" })
         data.registrationNotes ?? "To be updated",
         data.howDonationsUsed,
         data.paymentInfo,
+        emptyToNull(data.taglineHi),
+        emptyToNull(data.aboutTextHi),
+        emptyToNull(data.missionHi),
+        emptyToNull(data.visionHi),
+        emptyToNull(data.valuesTextHi),
+        emptyToNull(data.areasOfWorkHi),
+        emptyToNull(data.registrationNotesHi),
+        emptyToNull(data.howDonationsUsedHi),
+        emptyToNull(data.paymentInfoHi),
       ],
     );
     return { ok: true as const };
@@ -539,14 +603,31 @@ export const saveTeamMember = createServerFn({ method: "POST" })
     const sql = await getSql();
     if (data.id) {
       await sql.query(
-        `update team_members set name=$1, role=$2, bio=$3, photo_url=$4, sort_order=$5 where id=$6`,
-        [data.name, data.role, data.bio ?? "To be updated", data.photoUrl ?? "", data.sortOrder, data.id],
+        `update team_members set name=$1, role=$2, bio=$3, role_hi=$4, bio_hi=$5, photo_url=$6, sort_order=$7 where id=$8`,
+        [
+          data.name,
+          data.role,
+          data.bio ?? "To be updated",
+          emptyToNull(data.roleHi),
+          emptyToNull(data.bioHi),
+          data.photoUrl ?? "",
+          data.sortOrder,
+          data.id,
+        ],
       );
       return { ok: true as const };
     }
     await sql.query(
-      `insert into team_members (name, role, bio, photo_url, sort_order) values ($1,$2,$3,$4,$5)`,
-      [data.name, data.role, data.bio ?? "To be updated", data.photoUrl ?? "", data.sortOrder],
+      `insert into team_members (name, role, bio, role_hi, bio_hi, photo_url, sort_order) values ($1,$2,$3,$4,$5,$6,$7)`,
+      [
+        data.name,
+        data.role,
+        data.bio ?? "To be updated",
+        emptyToNull(data.roleHi),
+        emptyToNull(data.bioHi),
+        data.photoUrl ?? "",
+        data.sortOrder,
+      ],
     );
     return { ok: true as const };
   });
@@ -581,14 +662,29 @@ export const saveFaq = createServerFn({ method: "POST" })
     const sql = await getSql();
     if (data.id) {
       await sql.query(
-        `update faqs set question=$1, answer=$2, sort_order=$3, is_published=$4 where id=$5`,
-        [data.question, data.answer, data.sortOrder, data.isPublished, data.id],
+        `update faqs set question=$1, answer=$2, question_hi=$3, answer_hi=$4, sort_order=$5, is_published=$6 where id=$7`,
+        [
+          data.question,
+          data.answer,
+          emptyToNull(data.questionHi),
+          emptyToNull(data.answerHi),
+          data.sortOrder,
+          data.isPublished,
+          data.id,
+        ],
       );
       return { ok: true as const };
     }
     await sql.query(
-      `insert into faqs (question, answer, sort_order, is_published) values ($1,$2,$3,$4)`,
-      [data.question, data.answer, data.sortOrder, data.isPublished],
+      `insert into faqs (question, answer, question_hi, answer_hi, sort_order, is_published) values ($1,$2,$3,$4,$5,$6)`,
+      [
+        data.question,
+        data.answer,
+        emptyToNull(data.questionHi),
+        emptyToNull(data.answerHi),
+        data.sortOrder,
+        data.isPublished,
+      ],
     );
     return { ok: true as const };
   });
